@@ -6,9 +6,6 @@ const route = require('path-match')({
   end: false
 })
 
-/*
-  At this point, I'm not sure calling the lifecylce methods from the Final class is a good idea. I'm having trouble adding functions to the extended classes and being able to access them in the class declaration.
-*/
 export default class Final {
   lifecycleIncrement = -1;
   path = '/'
