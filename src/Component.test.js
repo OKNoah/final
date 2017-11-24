@@ -4,7 +4,7 @@ import Final from './index'
 import { findDecorator } from '../test/ArangoDecorator'
 
 @findDecorator({
-  collection: 'Post'
+  collection: 'FinalUser'
 })
 class User extends Final.Component {
   path = '/user/:user?'
@@ -13,9 +13,10 @@ class User extends Final.Component {
   }
 
   async respond () {
-    const data = await this.findOne({"body": "Updated!"})
+    await this.save({ "body": "Updated!" })
+    await this.findOne({ "body": "Updated!" })
     return {
-      data,
+      data: 'hi',
       params: this.props.params
     }
   }

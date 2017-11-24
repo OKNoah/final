@@ -23,7 +23,8 @@
     "flow-bin": "^0.61.0",
     "onchange": "^3.3.0",
     "tap-notify": "^1.0.0",
-    "tape": "^4.8.0"
+    "tape": "^4.8.0",
+    "toxic-decorators": "^0.3.8"
   },
   "dependencies": {
     "arangojs": "4",
