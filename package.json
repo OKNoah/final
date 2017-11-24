@@ -6,10 +6,7 @@
   "license": "MIT",
   "scripts": {
     "test": "./node_modules/.bin/tape -r @babel/register index.test.js",
-    "test:watch": "./node_modules/.bin/onchange '**/*.js' -- ./node_modules/.bin/tape -r @babel/register index.test.js"
-  },
-  "ava": {
-    "babel": "inherit"
+    "test:watch": "./node_modules/.bin/onchange '**/*.js' -- ./node_modules/.bin/tape -r @babel/register **/*.test.js"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.35",
