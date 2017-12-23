@@ -11,14 +11,16 @@ test('start server', t => {
     post: PORT
   })
 
-  setTimeout(() => t.end(), 3000)
+  setTimeout(() => t.end(), 1000)
 })
 
 test('get response', (t) => {
   client
     .get('localhost:3001/post/1')
     .then((response) => {
-      t.ok(response.body)
+      t.equal(response.status, 200)
+      t.equal(response.body.params.post, "1")
+      t.ok(response.body.data)
       t.end()
     })
 })

@@ -20,7 +20,10 @@ export default class Post extends Final {
     The respond function returns whatever the response will be. Notice the params and `this.findOne` are available.
   */
   async respond () {
-    const output = await this.findOne({"body": "Updated!"})
-    return output
+    const data = await this.findOne({"body": "Updated!"})
+    return {
+      data,
+      params: this.props.params
+    }
   }
 }
