@@ -1,0 +1,27 @@
+{
+  "name": "final",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Noah",
+  "license": "MIT",
+  "scripts": {
+    "test": "ava"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.0.0-beta.35",
+    "@babel/core": "^7.0.0-beta.35",
+    "@babel/node": "^7.0.0-beta.35",
+    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.35",
+    "@babel/preset-env": "^7.0.0-beta.35",
+    "@babel/preset-stage-0": "^7.0.0-beta.35",
+    "babel-eslint": "^8.0.3",
+    "babel-preset-flow": "^7.0.0-beta.3",
+    "eslint": "^4.13.1",
+    "flow-bin": "^0.61.0"
+  },
+  "dependencies": {
+    "arangojs": "4",
+    "path-match": "^1.2.4",
+    "superagent": "^3.8.2"
+  }
+}
