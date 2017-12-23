@@ -7,7 +7,9 @@
     "Set": false,
     "test": false,
     "expect": false,
-    "process": false
+    "process": false,
+    "Promise": false,
+    "require": false
   },
   "parser": "babel-eslint",
   "parserOptions": {

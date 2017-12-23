@@ -1,5 +1,5 @@
-import Final from './Component'
-import { findDecorator } from './ArangoDecorator'
+import Final from '../../src/Component'
+import { findDecorator } from '../ArangoDecorator'
 
 @findDecorator({
   collection: 'Post'

@@ -1,5 +1,5 @@
-import Final from './Component'
-import { Database, aql } from 'arangojs';
+import Final from '../src'
+import { Database, aql } from 'arangojs'
 
 const db = new Database({
   url: 'http://root:@127.0.0.1:8529',
@@ -30,7 +30,7 @@ export const findDecorator = (options) => {
   const collection = db.collection(options.collection)
 
   return (target) => {
-    class DecoratedClass extends Final {
+    class DecoratedClass extends Final.Component {
       constructor () {
         super()
       }

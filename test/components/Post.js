@@ -1,5 +1,5 @@
-import Final from './Component'
-import { findDecorator } from './ArangoDecorator'
+import Final from '../../src/Component'
+import { findDecorator } from '../ArangoDecorator'
 
 /*
   The `findDecorator` adds a few funtions to the class, like `this.findOne`.
