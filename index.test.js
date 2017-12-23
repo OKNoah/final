@@ -2,16 +2,30 @@ import test from 'tape'
 import { resolve } from 'path'
 import client from 'superagent'
 import Final from './src'
+import Post from './test/components/Post'
 
 const PORT = process.env.PORT || 3001
 
-test('start server', t => {
-  Final.createServer({
+test('start server with directory', async t => {
+  const server = await Final.createServer({
     directory: resolve(__dirname, './test/components'),
-    post: PORT
+    port: PORT
   })
 
-  setTimeout(() => t.end(), 1000)
+  t.ok(server, 'server should be truthy')
+  t.ok(server.close, 'server.close should exist')
+  server.close(t.end())
+})
+
+test('start server with components', async t => {
+  const server = await Final.createServer({
+    components: [Post],
+    port: PORT
+  })
+
+  t.ok(server, 'server should be truthy')
+  t.ok(server.close, 'server.close should exist')
+  t.end()
 })
 
 test('get response', (t) => {

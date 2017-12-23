@@ -2,26 +2,34 @@ import { resolve } from 'path'
 import { Server } from 'http'
 import { readdirSync } from 'fs'
 
-class MyServer extends Server {
-  constructor (props) {
-    super(props);
-    this.port = 3001
-    this.listen(this.port)
-  }
-}
-
-const myServer = new MyServer()
-
 export default async function createServer ({
   directory,
-  port
+  port,
+  components
 } = { directory: './src/components', port: 3001 }) {
-  const components = readdirSync(directory)
+  class MyServer extends Server {
+    constructor (props) {
+      super(props);
+      this.port = port
+      this.listen(this.port)
+    }
+  }
 
-  const items = await Promise.all(components.map(async (comp)=> {
-    const Component = require(resolve(directory, comp)).default
+  const myServer = new MyServer()
 
-    return new Component()
+  /*
+    Determine whether to load the array of classes passed as the `components` option, or use paths from the `directory` option.
+  */
+  const comps = components || readdirSync(directory)
+
+  const items = await Promise.all(comps.map(async (comp)=> {
+    if (!components) {
+      const Component = require(resolve(directory, comp)).default
+
+      return new Component()
+    }
+
+    return new comp()
   }))
     
   function functionName (fun) {
@@ -71,4 +79,6 @@ export default async function createServer ({
       }
     })
   })
+
+  return myServer
 }
