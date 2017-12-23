@@ -39,8 +39,6 @@ export default async function createServer ({
 
           const stepName = functionName(item.lifecycle[item.lifecycleIncrement])
 
-          console.log('item.lifecycleIncrement', item.lifecycleIncrement)
-
           try {
             switch (item.lifecycleIncrement) {
               case 4:

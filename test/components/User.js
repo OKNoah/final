@@ -11,7 +11,6 @@ export default class User extends Final {
   }
 
   async respond () {
-    console.log('this.props.params', this.props.params)
     const output = await this.findOne({"body": "Updated!"})
     return output
   }

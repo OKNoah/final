@@ -9,7 +9,8 @@
     "expect": false,
     "process": false,
     "Promise": false,
-    "require": false
+    "require": false,
+    "__dirname": false
   },
   "parser": "babel-eslint",
   "parserOptions": {

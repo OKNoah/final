@@ -1,4 +1,8 @@
 import Component from './Component'
 import createServer from './createServer'
 
-export default { Component, createServer }
+const Final = {
+  Component, createServer
+}
+
+export default Final

@@ -1,12 +1,24 @@
-import test from 'ava'
+import test from 'tape'
+import { resolve } from 'path'
 import client from 'superagent'
+import Final from './src'
 
 const PORT = process.env.PORT || 3001
 
-test('get nothing', async (t) => {
-  const request = await client.get(`localhost:${PORT}`)
+test('start server', t => {
+  Final.createServer({
+    directory: resolve(__dirname, './test/components'),
+    post: PORT
+  })
 
-  console.log('request', request)
+  setTimeout(() => t.end(), 3000)
+})
 
-  t.truthy(request)
+test('get response', (t) => {
+  client
+    .get('localhost:3001/post/1')
+    .then((response) => {
+      t.ok(response.body)
+      t.end()
+    })
 })
