@@ -1,12 +1,15 @@
 import { resolve } from 'path'
 import { Server } from 'http'
 import { readdirSync } from 'fs'
+import { isArray } from 'lodash'
 
 export default async function createServer ({
   directory,
   port,
-  components
-} = { directory: './src/components', port: 3001 }) {
+  components,
+  middleware,
+  store
+} = { directory: './src/components', port: 3001, middleware: [] }) {
   class MyServer extends Server {
     constructor (props) {
       super(props);
@@ -31,13 +34,29 @@ export default async function createServer ({
     const comps = components || readdirSync(directory)
 
     const items = await Promise.all(comps.map(async (comp)=> {
-      if (!components) {
-        const Component = require(resolve(directory, comp)).default
+      let Comp = comp
 
-        return new Component()
+      if (!components) {
+        Comp = require(resolve(directory, comp)).default
       }
 
-      return new comp()
+      if (middleware) {
+        if (isArray(middleware)) {
+          await Promise.all(middleware.map(async (midd) => {
+            const apply = await midd()
+            Comp = await apply(Comp)
+          }))
+        } else {
+          const apply = await middleware(store || undefined)
+          Comp = await apply(Comp)
+        }
+      }
+
+      if (store) {
+        Comp.prototype.store = store
+      }
+
+      return new Comp()
     }))
 
     await items.map(async (item) => {

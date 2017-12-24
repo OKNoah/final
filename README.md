@@ -5,16 +5,18 @@ This is a very experimental proof of concept for a sort of MC framework. It's me
 ## Usage
 
 ```js
-import Final from './Component'
-import { findDecorator } from './ArangoDecorator'
+import Final from './src/index'
+import { findDecorator } from './test/ArangoDecorator'
+import { middleware, store } from './example/middleware'
 
 /*
   The `findDecorator` adds a few funtions to the class, like `this.findOne`.
 */
 @findDecorator({
+  // this decorator will verify collection or create new one
   collection: 'Post'
 })
-export default class Post extends Final {
+class Post extends Final.Component {
   /*
     The path decides what requests will match this component and the params.
   */
@@ -32,4 +34,11 @@ export default class Post extends Final {
     return output
   }
 }
+
+Final.createServer({
+  components: [Post],
+  port: 3001,
+  middleware, // optional, see `examples/middleware-usage.js`
+  store // optional, see `examples/middleware-usage.js`
+})
 ```

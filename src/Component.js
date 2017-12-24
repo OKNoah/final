@@ -37,7 +37,7 @@ export default class Final {
     if (params === false) {
       throw 'No match'
     }
-    this.props = { params }
+    this.props.params = params
     return
   }
 
