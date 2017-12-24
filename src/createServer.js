@@ -16,21 +16,6 @@ export default async function createServer ({
   }
 
   const myServer = new MyServer()
-
-  /*
-    Determine whether to load the array of classes passed as the `components` option, or use paths from the `directory` option.
-  */
-  const comps = components || readdirSync(directory)
-
-  const items = await Promise.all(comps.map(async (comp)=> {
-    if (!components) {
-      const Component = require(resolve(directory, comp)).default
-
-      return new Component()
-    }
-
-    return new comp()
-  }))
     
   function functionName (fun) {
     var ret = fun.toString();
@@ -40,6 +25,21 @@ export default async function createServer ({
   }
 
   myServer.on('request', async (req, res) => {
+    /*
+      Determine whether to load the array of classes passed as the `components` option, or use paths from the `directory` option.
+    */
+    const comps = components || readdirSync(directory)
+
+    const items = await Promise.all(comps.map(async (comp)=> {
+      if (!components) {
+        const Component = require(resolve(directory, comp)).default
+
+        return new Component()
+      }
+
+      return new comp()
+    }))
+
     await items.map(async (item) => {
       try {
         while (item.lifecycleIncrement < item.lifecycle.length - 1) {
