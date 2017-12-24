@@ -1,5 +1,5 @@
-import Final from './Component'
-import { findDecorator } from './ArangoDecorator'
+import Final from '../../src/Component'
+import { findDecorator } from '../ArangoDecorator'
 
 /*
   The `findDecorator` adds a few funtions to the class, like `this.findOne`.
@@ -20,8 +20,10 @@ export default class Post extends Final {
     The respond function returns whatever the response will be. Notice the params and `this.findOne` are available.
   */
   async respond () {
-    console.log('this.props.params', this.props.params)
-    const output = await this.findOne({"body": "Updated!"})
-    return output
+    const data = await this.findOne({"body": "Updated!"})
+    return {
+      data,
+      params: this.props.params
+    }
   }
 }

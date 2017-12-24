@@ -5,7 +5,8 @@
   "author": "Noah",
   "license": "MIT",
   "scripts": {
-    "test": "ava"
+    "test": "./node_modules/.bin/tape -r @babel/register './src/**/*.test.js' | ./node_modules/.bin/tap-notify | ./node_modules/.bin/faucet",
+    "test:watch": "./node_modules/.bin/onchange '**/*.js' -- yarn run test"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.35",
@@ -14,13 +15,20 @@
     "@babel/plugin-proposal-class-properties": "^7.0.0-beta.35",
     "@babel/preset-env": "^7.0.0-beta.35",
     "@babel/preset-stage-0": "^7.0.0-beta.35",
+    "@babel/register": "^7.0.0-beta.35",
     "babel-eslint": "^8.0.3",
     "babel-preset-flow": "^7.0.0-beta.3",
     "eslint": "^4.13.1",
-    "flow-bin": "^0.61.0"
+    "faucet": "^0.0.1",
+    "flow-bin": "^0.61.0",
+    "onchange": "^3.3.0",
+    "tap-notify": "^1.0.0",
+    "tape": "^4.8.0",
+    "toxic-decorators": "^0.3.8"
   },
   "dependencies": {
     "arangojs": "4",
+    "benchmark": "^2.1.4",
     "path-match": "^1.2.4",
     "superagent": "^3.8.2"
   }

@@ -1,5 +1,5 @@
-import Final from './Component'
-import { findDecorator } from './ArangoDecorator'
+import Final from '../../src/Component'
+import { findDecorator } from '../ArangoDecorator'
 
 @findDecorator({
   collection: 'Post'
@@ -11,7 +11,6 @@ export default class User extends Final {
   }
 
   async respond () {
-    console.log('this.props.params', this.props.params)
     const output = await this.findOne({"body": "Updated!"})
     return output
   }
