@@ -1,6 +1,7 @@
 import test from 'tape'
 import client from 'superagent'
 import Final from './index'
+import { middleware, store } from '../examples/middleware'
 import { findDecorator } from '../test/ArangoDecorator'
 
 @findDecorator({
@@ -14,10 +15,12 @@ class User extends Final.Component {
 
   async respond () {
     await this.save({ "body": "Updated!" })
-    await this.findOne({ "body": "Updated!" })
+    const data = await this.findOne({ "body": "Updated!" })
+    await this.actions.increment()
     return {
-      data: 'hi',
-      params: this.props.params
+      data,
+      params: this.props.params,
+      state: this.store.getState()
     }
   }
 }
@@ -28,7 +31,9 @@ let server = {}
 test('start server with components', async t => {
   server = await Final.createServer({
     components: [User],
-    port: PORT
+    port: PORT,
+    store,
+    middleware
   })
 
   t.ok(server, 'server should be truthy')
@@ -42,6 +47,8 @@ test('get response', (t) => {
     .then((response) => {
       t.equal(response.status, 200)
       t.equal(response.body.params.user, "1")
+      t.ok(response.body.state.count, 'should have `count` property on `body.state`')
+      t.equal(response.body.state.count, 1, 'should always be 1')
       t.ok(response.body.data)
       server.close(t.end())
     })

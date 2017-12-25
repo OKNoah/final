@@ -1,6 +1,5 @@
 {
   "extends": ["eslint:recommended"],
-  // "plugins": ["async-await"],
   "root": true,
   "globals": {
     "Symbol": false,
@@ -10,7 +9,9 @@
     "process": false,
     "Promise": false,
     "require": false,
-    "__dirname": false
+    "__dirname": false,
+    "setTimeout": false,
+    "console": false
   },
   "parser": "babel-eslint",
   "parserOptions": {

@@ -1,12 +1,14 @@
 {
   "name": "final",
-  "version": "1.0.0",
+  "version": "1.0.0-alpha.1",
   "main": "index.js",
   "author": "Noah",
   "license": "MIT",
   "scripts": {
+    "test:path": "./node_modules/.bin/tape -r @babel/register",
     "test": "./node_modules/.bin/tape -r @babel/register './src/**/*.test.js' | ./node_modules/.bin/tap-notify | ./node_modules/.bin/faucet",
-    "test:watch": "./node_modules/.bin/onchange '**/*.js' -- yarn run test"
+    "test:watch": "./node_modules/.bin/onchange '**/*.js' -- yarn run test",
+    "test:pathwatch": "./node_modules/.bin/onchange '**/*.js' -- yarn run test:path"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.35",
@@ -24,12 +26,13 @@
     "onchange": "^3.3.0",
     "tap-notify": "^1.0.0",
     "tape": "^4.8.0",
-    "toxic-decorators": "^0.3.8"
+    "toxic-decorators": "^0.3.8",
+    "superagent": "^3.8.2",
+    "benchmark": "^2.1.4"
   },
   "dependencies": {
     "arangojs": "4",
-    "benchmark": "^2.1.4",
-    "path-match": "^1.2.4",
-    "superagent": "^3.8.2"
+    "lodash": "^4.17.4",
+    "path-match": "^1.2.4"
   }
 }

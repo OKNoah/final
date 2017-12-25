@@ -1,12 +1,15 @@
 import { resolve } from 'path'
 import { Server } from 'http'
 import { readdirSync } from 'fs'
+import { isArray } from 'lodash'
 
 export default async function createServer ({
   directory,
   port,
-  components
-} = { directory: './src/components', port: 3001 }) {
+  components,
+  middleware,
+  store
+} = { directory: './src/components', port: 3001, middleware: [] }) {
   class MyServer extends Server {
     constructor (props) {
       super(props);
@@ -16,21 +19,6 @@ export default async function createServer ({
   }
 
   const myServer = new MyServer()
-
-  /*
-    Determine whether to load the array of classes passed as the `components` option, or use paths from the `directory` option.
-  */
-  const comps = components || readdirSync(directory)
-
-  const items = await Promise.all(comps.map(async (comp)=> {
-    if (!components) {
-      const Component = require(resolve(directory, comp)).default
-
-      return new Component()
-    }
-
-    return new comp()
-  }))
     
   function functionName (fun) {
     var ret = fun.toString();
@@ -40,6 +28,37 @@ export default async function createServer ({
   }
 
   myServer.on('request', async (req, res) => {
+    /*
+      Determine whether to load the array of classes passed as the `components` option, or use paths from the `directory` option.
+    */
+    const comps = components || readdirSync(directory)
+
+    const items = await Promise.all(comps.map(async (comp)=> {
+      let Comp = comp
+
+      if (!components) {
+        Comp = require(resolve(directory, comp)).default
+      }
+
+      if (middleware) {
+        if (isArray(middleware)) {
+          await Promise.all(middleware.map(async (midd) => {
+            const apply = await midd()
+            Comp = await apply(Comp)
+          }))
+        } else {
+          const apply = await middleware(store || undefined)
+          Comp = await apply(Comp)
+        }
+      }
+
+      if (store) {
+        Comp.prototype.store = store
+      }
+
+      return new Comp()
+    }))
+
     await items.map(async (item) => {
       try {
         while (item.lifecycleIncrement < item.lifecycle.length - 1) {
