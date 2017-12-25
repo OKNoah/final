@@ -10,11 +10,11 @@ import { middleware, store, reducer } from '../examples/middleware'
 
   You can test it easily in terminal like this:
 
-  `curl -X GET --header 'Accept: application/json' 'http://localhost:3001/user/$v'`
+  `curl -s -X GET --header 'Accept: application/json' 'http://localhost:3001/user/$v'`
 
   If you want to run that 1000 times for fun, do this (in bash, not fish. run just 'bash' first to leave fish for bash.):
 
-  'for v in {1..1000} ; do echo "`curl -X GET --header Accept: application/json http://localhost:3001/user/$v`"; done;'
+  'for v in {1..1000} ; do echo "`curl -s -X GET --header 'Accept: application/json' 'http://localhost:3001/user/$v'`"; done;'
 
   OR see `../test/scripts.md` for another basic one-liner script that prints a bit better.
 */
