@@ -160,7 +160,7 @@ export default async function createServer ({
     Memory usage ${getProcessMemoryUsage()} MB
   `)
 
-  setInterval(() => console.log(`Memory usage ${getProcessMemoryUsage()} MB`), 5000)
+  setInterval(() => console.log(`Memory usage ${getProcessMemoryUsage()} MB`), 15000)
 
   return myServer
 }

@@ -1,12 +1,21 @@
 import { createStore, bind, bindActionCreators } from 'redux'
-import Final from '../src/index'
+import Final, { reduxConnect } from '../src/index'
 
 const PORT = 3001
 
 const reducer = (state = {}, action) => {
   const radius = 50
 
-  const position = !state[action.player] ? [0, 0] : state[action.player].slice()
+  if (!action.player) {
+    return state
+  }
+
+  const rand = () => Math.floor(Math.random() * 1000) % radius
+
+  const position = !state[action.player] ?
+    [rand(), rand()]
+  :
+    state[action.player].slice()
 
   switch (action.type) {
     case 'map/MOVE_UP':
@@ -47,7 +56,7 @@ const reducer = (state = {}, action) => {
 
     case 'map/INIT':
       return {
-        [action.player]: [1, 1],
+        [action.player]: [rand(), rand()],
         ...state
       }
 
@@ -58,6 +67,9 @@ const reducer = (state = {}, action) => {
 
 const globalStore = createStore(reducer)
 
+/*
+  This is just some code to allow adding fake users for testing (and fun). Perhaps it useful to the example too.
+*/
 const bugs = []
 
 class Bug {
@@ -94,27 +106,23 @@ function makeBug () {
   bugs.push(bug.run())
 }
 
-const reduxConnect = (/*options*/) => (Component) => {
-  function dressup (store) {
-    const { dispatch } = store
-    Component.prototype.actions = {
-      moveUp: (player) => dispatch({ type: 'map/MOVE_UP', player }),
-      moveDown: (player) => dispatch({ type: 'map/MOVE_DOWN', player }),
-      moveLeft: (player) => dispatch({ type: 'map/MOVE_LEFT', player }),
-      moveRight: (player) => dispatch({ type: 'map/MOVE_RIGHT', player }),
-      init: (player) => dispatch({ type: 'map/INIT', player }),
-      bug: () => makeBug()
-    }
-    Component.prototype.store = store
-    return new Component()
-  }
+const moveUp = (player) => ({ type: 'map/MOVE_UP', player })
+const moveDown = (player) => ({ type: 'map/MOVE_DOWN', player })
+const moveLeft = (player) => ({ type: 'map/MOVE_LEFT', player })
+const moveRight = (player) => ({ type: 'map/MOVE_RIGHT', player })
+const init = (player) => ({ type: 'map/INIT', player })
 
-  if (typeof Component === 'function') {
-    return dressup
-  }
-}
-
-@reduxConnect()
+@reduxConnect(
+  null,
+  (dispatch) => bindActionCreators({
+    moveUp,
+    moveDown,
+    moveLeft,
+    moveRight,
+    init,
+    bug: makeBug
+  }, dispatch)
+)
 class User extends Final.Component {
   path = '/map/:map/player/:player?'
   constructor () {
@@ -126,7 +134,6 @@ class User extends Final.Component {
 
     this.actions.init(player)
   }
-
 
   async messageReceived (msg) {
     if (['moveUp', 'moveDown', 'moveLeft', 'moveRight', 'bug'].includes(msg)) {
