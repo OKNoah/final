@@ -1,5 +1,5 @@
 import { createStore, bind, bindActionCreators } from 'redux'
-import Final, { reduxConnect } from '../src/index'
+import { createServer, Component, reduxConnect } from '../src/index'
 
 const PORT = 3001
 
@@ -123,7 +123,7 @@ const init = (player) => ({ type: 'map/INIT', player })
     bug: makeBug
   }, dispatch)
 )
-class User extends Final.Component {
+class User extends Component {
   path = '/map/:map/player/:player?'
   constructor () {
     super()
@@ -152,7 +152,7 @@ class User extends Final.Component {
   }
 }
 
-Final.createServer({
+createServer({
   components: [User],
   port: PORT,
   store: globalStore
