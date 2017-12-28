@@ -1,16 +1,28 @@
 import test from 'tape'
 import client from 'superagent'
-import Final from './index'
+import Final, { reduxConnect } from './index'
 import { middleware, store } from '../examples/middleware'
 import { findDecorator } from '../test/ArangoDecorator'
+import { createStore, bind, bindActionCreators } from 'redux'
+import WS from 'ws'
 
+const HOST = 'localhost:3001'
+
+function testo () { return { type: 'TEST' } }
+
+@reduxConnect(
+  null,
+  (dispatch) => bindActionCreators({
+    increment: () => ({ type: 'GET_WHATEVER', result: { date: Date.now() } })
+  }, dispatch)
+)
 @findDecorator({
   collection: 'FinalUser'
 })
 class User extends Final.Component {
   path = '/user/:user?'
-  constructor () {
-    super()
+  constructor (props) {
+    super(props)
   }
 
   async respond () {
@@ -33,7 +45,7 @@ test('start server with components', async t => {
     components: [User],
     port: PORT,
     store,
-    middleware
+    // middleware
   })
 
   t.ok(server, 'server should be truthy')
@@ -43,13 +55,24 @@ test('start server with components', async t => {
 
 test('get response', (t) => {
   client
-    .get('localhost:3001/user/1')
+    .get(HOST + '/user/1')
     .then((response) => {
       t.equal(response.status, 200)
       t.equal(response.body.params.user, "1")
-      t.ok(response.body.state.count, 'should have `count` property on `body.state`')
+      t.ok(response.body.state.count !== undefined, 'should have `count` property on `body.state`')
       t.equal(response.body.state.count, 1, 'should always be 1')
       t.ok(response.body.data)
-      server.close(t.end())
+      t.end()
     })
 })
+
+test('upgrade to web sockets', (t) => {
+  const ws = new WS('ws://' + HOST)
+
+  ws.on('open', () => {
+    t.ok(ws, 'should open websockets connection')
+    server.close(t.end())
+  })
+})
+
+// test.onFailure(() => server.close())

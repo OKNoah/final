@@ -28,12 +28,13 @@
     "onchange": "^3.3.0",
     "superagent": "^3.8.2",
     "tap-notify": "^1.0.0",
-    "tape": "^4.8.0"
+    "tape": "github:substack/tape"
   },
   "dependencies": {
     "arangojs": "4",
     "lodash": "^4.17.4",
     "path-match": "^1.2.4",
+    "toxic-decorators": "^0.3.8",
     "ws": "^3.3.3"
   }
 }

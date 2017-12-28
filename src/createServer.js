@@ -28,9 +28,11 @@ export default async function createServer ({
 
   const subscriptions = new Subscriptions()
 
-  store.subscribe(() => {
-    subscriptions.emit('data')
-  })
+  if (store) {
+    store.subscribe(() => {
+      subscriptions.emit('data')
+    })
+  }
 
   async function lifecycleHandler (req, res) {
     const items = await getComponents()
@@ -49,7 +51,7 @@ export default async function createServer ({
           } catch (error) {
             if (error !== 'No match') {
               await item.componentDidCatch(error, {
-                stepName: 'step 3'
+                stepName: `step ${step}`
               })
               break
             }
@@ -88,7 +90,7 @@ export default async function createServer ({
       if (middleware) {
         if (isArray(middleware)) {
           await Promise.all(middleware.map(async (midd) => {
-            const apply = await midd()
+            const apply = await midd(store || undefined)
             Comp = await apply(Comp)
           }))
         } else {
