@@ -2,6 +2,8 @@ import { resolve } from 'path'
 import { Server } from 'http'
 import { readdirSync } from 'fs'
 import { isArray } from 'lodash'
+import { Server as Socket } from 'ws'
+import EventEmitter from 'events'
 
 export default async function createServer ({
   directory,
@@ -19,20 +21,65 @@ export default async function createServer ({
   }
 
   const myServer = new MyServer()
-    
-  function functionName (fun) {
-    var ret = fun.toString();
-    ret = ret.substr('function '.length);
-    ret = ret.substr(0, ret.indexOf('('));
-    return ret;
+
+  const server = new Socket({ server: myServer })
+
+  class Subscriptions extends EventEmitter {}
+
+  const subscriptions = new Subscriptions()
+
+  if (store) {
+    store.subscribe(() => {
+      subscriptions.emit('data')
+    })
   }
 
-  myServer.on('request', async (req, res) => {
-    /*
-      Determine whether to load the array of classes passed as the `components` option, or use paths from the `directory` option.
-    */
-    const comps = components || readdirSync(directory)
+  async function lifecycleHandler (req, res) {
+    const items = await getComponents()
+    const matches = []
 
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+
+      while (item.lifecycleIncrement < item.lifecycle.length) {
+        const step = item.lifecycleIncrement++
+        const func = item.lifecycle[step]
+
+        if (step === 0) {
+          try {
+            await func(req)
+          } catch (error) {
+            if (error !== 'No match') {
+              await item.componentDidCatch(error, {
+                stepName: `step ${step}`
+              })
+              break
+            }
+          }
+          matches.push(item)
+        }
+
+        if (step === 1) {
+          await func()
+        }
+
+        if (step === 2) {
+          const response = await func()
+          await item.setState(response)
+        }
+
+        if (step === 3) {
+          await func(res)
+        }
+      }
+    }
+
+    return matches
+  }
+
+  const comps = components || readdirSync(directory)
+
+  async function getComponents () {
     const items = await Promise.all(comps.map(async (comp)=> {
       let Comp = comp
 
@@ -43,7 +90,7 @@ export default async function createServer ({
       if (middleware) {
         if (isArray(middleware)) {
           await Promise.all(middleware.map(async (midd) => {
-            const apply = await midd()
+            const apply = await midd(store || undefined)
             Comp = await apply(Comp)
           }))
         } else {
@@ -56,48 +103,66 @@ export default async function createServer ({
         Comp.prototype.store = store
       }
 
-      return new Comp()
+      return new Comp(store)
     }))
 
-    await items.map(async (item) => {
-      try {
-        while (item.lifecycleIncrement < item.lifecycle.length - 1) {
-          item.lifecycleIncrement++
+    return items
+  }
 
-          const stepName = functionName(item.lifecycle[item.lifecycleIncrement])
+  async function socketHandler (socket, req) {
+    const items = await lifecycleHandler(req, socket)
 
-          try {
-            switch (item.lifecycleIncrement) {
-              case 4:
-                await item.lifecycle[item.lifecycleIncrement](res)
-                break
+    function reduxStateChange (state) {
+      items[0].respond()
+        .then(data => items[0].setState(data)
+          .then(() => items[0].responseDidEnd(socket)
+        )
+      )
+    }
 
-              case 3:
-                const response = await item.lifecycle[item.lifecycleIncrement]()
-                item.setState(response)
-                break
+    subscriptions.addListener('data', reduxStateChange)
 
-              case 0:
-                await item.lifecycle[item.lifecycleIncrement](req)
-                break
-
-              default:
-                item.lifecycle[item.lifecycleIncrement]()
-            }
-          } catch (error) {
-            if (error !== 'No match') {
-              await item.componentDidCatch(error, {
-                stepName
-              })
-            }
-            break
-          }
-        }
-      } catch (error) {
-        console.log('NO SENT THAT REQUEST!!!', error)
-      }
+    socket.on('close', () => {
+      subscriptions.removeListener('data', reduxStateChange)
     })
+    socket.on('error', () => console.log('One player departed.'))
+
+    socket.on('message', async (message) => {
+      await items.map(async (item) => {
+        try {
+          await item.messageReceived(message)
+        } catch (e) {
+          typeof e === 'string' ? socket.send(e) : console.error(e)
+        }
+      })
+    })
+  }
+
+  server.on('connection', socketHandler)
+
+  server.on('error', console.error)
+  myServer.on('error', console.error)
+
+  myServer.on('request', async (req, res) => {
+    try {
+      await lifecycleHandler(req, res)
+    } catch (e) {
+      console.error(e)
+    }
   })
+
+  function getProcessMemoryUsage () {
+    const string = (process.memoryUsage().heapUsed / 1028 / 1028).toString()
+    return string.slice(0, 4)
+  }
+
+  console.log(`
+    Final server started.
+    Process ${process.pid}
+    Memory usage ${getProcessMemoryUsage()} MB
+  `)
+
+  setInterval(() => console.log(`Memory usage ${getProcessMemoryUsage()} MB`), 15000)
 
   return myServer
 }

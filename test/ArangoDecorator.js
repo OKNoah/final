@@ -31,8 +31,8 @@ export function findDecorator (options) {
 
   return (target) => {
     class DecoratedClass extends Final.Component {
-      constructor () {
-        super()
+      constructor (props) {
+        super(props)
       }
 
       @before(checkCollection)

@@ -8,7 +8,8 @@
     "test:path": "./node_modules/.bin/tape -r @babel/register",
     "test": "./node_modules/.bin/tape -r @babel/register './src/**/*.test.js' | ./node_modules/.bin/tap-notify | ./node_modules/.bin/faucet",
     "test:watch": "./node_modules/.bin/onchange '**/*.js' -- yarn run test",
-    "test:pathwatch": "./node_modules/.bin/onchange '**/*.js' -- yarn run test:path"
+    "test:pathwatch": "./node_modules/.bin/onchange '**/*.js' -- yarn run test:path",
+    "test:game-server": "curl -s -X GET --header 'Accept: application/json' 'http://localhost:3001/map/1/player/1234' | node -r @babel/register -e \"process.stdin.setEncoding('utf8'); var chunks = ''; process.stdin.on('readable', () => { const chunk = process.stdin.read(); if (chunk !== null) { chunks += chunk }}); process.stdin.on('end', () => { process.stdout.write(JSON.stringify(JSON.parse(chunks), null, 2)) ;});\""
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.35",
@@ -20,19 +21,20 @@
     "@babel/register": "^7.0.0-beta.35",
     "babel-eslint": "^8.0.3",
     "babel-preset-flow": "^7.0.0-beta.3",
+    "benchmark": "^2.1.4",
     "eslint": "^4.13.1",
     "faucet": "^0.0.1",
     "flow-bin": "^0.61.0",
     "onchange": "^3.3.0",
-    "tap-notify": "^1.0.0",
-    "tape": "^4.8.0",
-    "toxic-decorators": "^0.3.8",
     "superagent": "^3.8.2",
-    "benchmark": "^2.1.4"
+    "tap-notify": "^1.0.0",
+    "tape": "github:substack/tape"
   },
   "dependencies": {
     "arangojs": "4",
     "lodash": "^4.17.4",
-    "path-match": "^1.2.4"
+    "path-match": "^1.2.4",
+    "toxic-decorators": "^0.3.8",
+    "ws": "^3.3.3"
   }
 }
