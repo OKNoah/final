@@ -11,13 +11,17 @@ export default class Final {
   path = '/'
   response = {};
   state = {};
-  props = {};
   lifecycle = [
-    this.requestWillBeReceived.bind(this),
-    this.responseWillOccur.bind(this),
+    this.componentWillReceiveProps.bind(this),
+    this.shouldComponentUpdate.bind(this),
+    this.componentWillRespond.bind(this),
     this.respond.bind(this),
     this.responseDidEnd.bind(this)
   ];
+
+  constructor () {
+    this.props = {}
+  }
 
   static async setState (instance, state) {
     instance.state = state
@@ -31,14 +35,11 @@ export default class Final {
     return
   }
 
-  async requestWillBeReceived (req) {
-    this.request = req
-    const match = route(this.path)
-    const params = match(parse(this.request.url).pathname)
-    this.props.params = params
-    if (!this.props.params) {
-      throw 'No match'
-    }
+  async shouldComponentUpdate () {
+    return true
+  }
+
+  async componentWillReceiveProps () {
     return
   }
 
@@ -46,31 +47,23 @@ export default class Final {
     return
   }
 
-  async requestReceived () {
+  async componentWillRespond () {
     return
   }
 
-  async responseWillOccur () {
-    return
-  }
-
-  async responseWillEnd () {
-    return
-  }
-
-  async responseDidEnd (res) {
+  async responseDidEnd () {
     const data = JSON.stringify(this.state)
     const length = Buffer.byteLength(JSON.stringify(data))
 
     try {
-      res.writeHead(200, {
+      this.props.response.writeHead(200, {
         'Content-Length': length,
         'Content-Type': 'application/json'
       })
-      res.end(data)
+      this.props.response.end(data)
     } catch (e) {
       try {
-        res.send(data)
+        this.props.response.send(data)
       } catch (e) {
         console.error(e)
       }
@@ -88,6 +81,6 @@ export default class Final {
   }
 
   async tick () {
-    this.lifecycleIncrement++
+    return this.lifecycleIncrement + 1
   }
 }

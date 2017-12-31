@@ -113,7 +113,9 @@ const moveRight = (player) => ({ type: 'map/MOVE_RIGHT', player })
 const init = (player) => ({ type: 'map/INIT', player })
 
 @reduxConnect(
-  null,
+  (state) => ({
+    players: state
+  }),
   (dispatch) => bindActionCreators({
     moveUp,
     moveDown,
