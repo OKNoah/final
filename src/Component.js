@@ -35,8 +35,12 @@ export default class Final {
     return
   }
 
-  async shouldComponentUpdate () {
-    return true
+  async shouldComponentUpdate (newProps) {
+    if (newProps !== this.props) {
+      return true
+    }
+
+    return false
   }
 
   async componentWillReceiveProps () {
@@ -53,7 +57,7 @@ export default class Final {
 
   async responseDidEnd () {
     const data = JSON.stringify(this.state)
-    const length = Buffer.byteLength(JSON.stringify(data))
+    const length = Buffer.byteLength(data)
 
     try {
       this.props.response.writeHead(200, {
@@ -61,12 +65,11 @@ export default class Final {
         'Content-Type': 'application/json'
       })
       this.props.response.end(data)
-    } catch (e) {
-      try {
-        this.props.response.send(data)
-      } catch (e) {
-        console.error(e)
+      if (this.end) {
+        this.end()
       }
+    } catch (e) {
+      this.props.response.send(data)
     }
     return
   }

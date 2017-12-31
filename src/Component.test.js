@@ -21,9 +21,6 @@ function testo () { return { type: 'TEST' } }
 })
 class User extends Final.Component {
   path = '/user/:user?'
-  constructor (props) {
-    super(props)
-  }
 
   async respond () {
     await this.save({ "body": "Updated!" })

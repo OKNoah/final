@@ -1,5 +1,5 @@
 import { before } from 'toxic-decorators'
-import { Database, aql } from 'arangojs'
+import { Database } from 'arangojs'
 import Final from '../src'
 
 /*

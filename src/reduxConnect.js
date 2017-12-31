@@ -6,8 +6,6 @@ const reduxConnect = (mapStateToProps, mapActionsToDispatch) => (Component) => {
     const actions = mapActionsToDispatch(store.dispatch)
     const props = mapStateToProps ? mapStateToProps(store.getState()) : {}
 
-    logger('props', props)
-
     class Subscriptions extends EventEmitter {}
 
     const subscriptions = new Subscriptions()
@@ -27,11 +25,28 @@ const reduxConnect = (mapStateToProps, mapActionsToDispatch) => (Component) => {
 
     const instance = new Component()
 
-    subscriptions.addListener('data', (data) => {
+    instance.props = {
+      ...instance.props,
+      ...props
+    }
+
+    function socketHandler (data) {
       instance.lifecycleIncrement = 1
-      const props = mapStateToProps(data)
-      updater(instance, props)
-    })
+      const props = mapStateToProps ? mapStateToProps(data) : {}
+
+      if (instance.props.response) {
+        updater(instance, props)
+      }
+    }
+
+    subscriptions.addListener('data', socketHandler)
+
+    /*
+      A function to be called when the websocket client closes.
+    */
+    Component.prototype.end = () => {
+      subscriptions.removeListener('data', socketHandler)
+    }
 
     return instance
   }

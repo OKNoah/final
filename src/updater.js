@@ -1,5 +1,6 @@
 import { parse } from 'url'
 import { logger } from './index'
+import WebSocket from 'ws'
 
 const route = require('path-match')({
   sensitive: false,
@@ -13,7 +14,7 @@ async function init (instance, req, res) {
     const func = instance.lifecycle[i - 1]
     const name = func && func.name && func.name.split(' ')[1]
 
-    logger('init step:', name || i)
+    // logger('init step:', name || i)
 
     if (name === 'componentWillReceiveProps') {
       await func(req)
@@ -26,7 +27,7 @@ async function init (instance, req, res) {
         params
       }
       if (!instance.props.params) {
-        logger('No match pathname', pathname)
+        // logger('No match pathname', pathname)
         throw 'No match'
       }
     }
@@ -37,48 +38,41 @@ async function init (instance, req, res) {
         request: req,
         response: res
       }
+      if (instance.props.response instanceof WebSocket) {
+        logger('✅ is WebSocket')
+      }
       logger('instance.props', Object.getOwnPropertyNames(instance.props))
     }
   }
 }
 
+/*
+  The purpose of this is to run the lifecycle with `newProps`, aka data.
+*/
 async function updater (instance, data) {
-  const step = instance.lifecycleIncrement++
-  const func = instance.lifecycle[step]
-  const name = func && func.name && func.name.split(' ')[1]
-
-  logger('updater step:', name || step)
-
-  if (name === 'componentWillReceiveProps') {
-    await func(data)
+  const nextProps = {
+    ...instance.props,
+    ...data
   }
 
-  if (name === 'shouldComponentUpdate') {
-    const shouldUpdate = await func(data)
-    if (!shouldUpdate) {
-      throw "Should not update"
-    }
-    instance.props = {
-      ...instance.props,
-      ...data
-    }
+  const shouldUpdate = await instance.shouldComponentUpdate(nextProps)
 
-    if (shouldUpdate) {
-      const response = await instance.respond()
-      await instance.setState(response)
-      logger('responseDidEnd instance.props', Object.getOwnPropertyNames(instance.props))
-      await instance.responseDidEnd()
-    }
+  if (!shouldUpdate) {
+    throw "Should not update"
   }
 
-  if (name === 'respond') {
-    const response = await func()
-    await instance.setState(response)
-  }
+  instance.props = nextProps
 
-  if (name === 'responseDidEnd') {
-    logger('responseDidEnd instance.props', Object.getOwnPropertyNames(instance.props))
-    await func()
+  const response = await instance.respond()
+  await instance.setState(response)
+  logger('responseDidEnd instance.props', Object.getOwnPropertyNames(instance.props))
+  try {
+    await instance.responseDidEnd()
+  } catch (e) {
+    if (e.message === 'not opened') {
+      logger('Socket not open.')
+    }
+    return
   }
 }
 

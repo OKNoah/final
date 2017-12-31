@@ -1,5 +1,6 @@
-import { createStore, bind, bindActionCreators } from 'redux'
+import { createStore, bindActionCreators, combineReducers } from 'redux'
 import { createServer, Component, reduxConnect } from '../src/index'
+import { makeBug } from '../test/game-server_fake-player.js'
 
 const PORT = 3001
 
@@ -65,46 +66,11 @@ const reducer = (state = {}, action) => {
   }
 }
 
-const globalStore = createStore(reducer)
+const reducers = combineReducers({
+  players: reducer
+})
 
-/*
-  This is just some code to allow adding fake users for testing (and fun). Perhaps it useful to the example too.
-*/
-const bugs = []
-
-class Bug {
-  constructor (player, interval = 2000) {
-    this.player = player
-    this.timeout = interval
-  }
-
-  move () {
-    const type = ['map/MOVE_UP', 'map/MOVE_DOWN', 'map/MOVE_RIGHT', 'map/MOVE_LEFT'][Math.floor(Math.random() * 200) % 4]
-
-    globalStore.dispatch({ type, player: this.player })
-  }
-
-  run () {
-    setInterval(() => {
-      this.move()
-    }, 2000)
-  }
-}
-
-function makeBug () {
-  function getRandomColor () {
-    const letters = '0123456789ABCDEF'
-    let color = ''
-    for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)]
-    }
-    return color
-  }
-
-  const bug = new Bug(getRandomColor())
-
-  bugs.push(bug.run())
-}
+const globalStore = createStore(reducers)
 
 const moveUp = (player) => ({ type: 'map/MOVE_UP', player })
 const moveDown = (player) => ({ type: 'map/MOVE_DOWN', player })
@@ -112,9 +78,14 @@ const moveLeft = (player) => ({ type: 'map/MOVE_LEFT', player })
 const moveRight = (player) => ({ type: 'map/MOVE_RIGHT', player })
 const init = (player) => ({ type: 'map/INIT', player })
 
+/*
+  This is a "Bug", a fake user/player that moves around randomly. Not to be confused with a software glitch/bug. TODO: Probably change name of this to avoid confusion. See `game-server_fake-player.js`.
+*/
+const bug = makeBug(globalStore)
+
 @reduxConnect(
   (state) => ({
-    players: state
+    players: state.players
   }),
   (dispatch) => bindActionCreators({
     moveUp,
@@ -122,19 +93,13 @@ const init = (player) => ({ type: 'map/INIT', player })
     moveLeft,
     moveRight,
     init,
-    bug: makeBug
+    bug
   }, dispatch)
 )
 class User extends Component {
   path = '/map/:map/player/:player?'
   constructor () {
     super()
-  }
-
-  async responseWillOccur () {
-    const { player } = this.props.params
-
-    this.actions.init(player)
   }
 
   async messageReceived (msg) {
@@ -149,7 +114,7 @@ class User extends Component {
 
   async respond () {
     return {
-      data: this.store.getState()
+      data: this.props.players
     }
   }
 }

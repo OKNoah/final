@@ -24,16 +24,6 @@ export default async function createServer ({
 
   const server = new Socket({ server: myServer })
 
-  // class Subscriptions extends EventEmitter {}
-
-  // const subscriptions = new Subscriptions()
-
-  // if (store) {
-  //   store.subscribe(() => {
-  //     subscriptions.emit('data')
-  //   })
-  // }
-
   async function lifecycleHandler (req, res) {
     const items = await getComponents()
     const matches = []
@@ -42,6 +32,7 @@ export default async function createServer ({
       const item = items[i]
 
       try {
+        logger('running init')
         await updater.init(item, req, res)
       } catch (error) {
         if (error !== 'No match') {
@@ -99,23 +90,22 @@ export default async function createServer ({
   }
 
   async function socketHandler (socket, req) {
-    const items = await lifecycleHandler(req, socket)
+    let items = await lifecycleHandler(req, socket)
 
-    // function reduxStateChange (state) {
-    //   items[0].respond()
-    //     .then(data => items[0].setState(data)
-    //       .then(() => items[0].responseDidEnd(socket)
-    //     )
-    //   )
-    // }
+    /*
+      Removes the redux event listener, if it is attached.
+    */
+    socket.on('close', () => {
+      items.forEach((item) => item.end && item.end())
+    })
 
-    // subscriptions.addListener('data', reduxStateChange)
+    socket.on('error', (...data) => {
+      logger('One connection closed.', data)
+    })
 
-    // socket.on('close', () => {
-    //   subscriptions.removeListener('data', reduxStateChange)
-    // })
-    socket.on('error', () => console.log('One player departed.'))
-
+    /*
+      This should probably update `shouldComponentUpdate` some other lifectyle method rather than it's own special method. Or `updater`.
+    */
     socket.on('message', async (message) => {
       await items.map(async (item) => {
         try {
@@ -129,7 +119,7 @@ export default async function createServer ({
 
   server.on('connection', socketHandler)
 
-  server.on('error', console.error)
+  server.on('error', logger)
   myServer.on('error', console.error)
 
   myServer.on('request', async (req, res) => {
