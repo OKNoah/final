@@ -21,11 +21,10 @@ async function init (instance, req, res) {
       const pathname = parse(req.url).pathname
       const match = route(instance.path)
       const params = match(pathname)
-      instance.props = instance.props || {}
-      instance.props = {
+      instance.setProps({
         ...instance.props,
         params
-      }
+      })
       if (!instance.props.params) {
         // logger('No match pathname', pathname)
         throw 'No match'
@@ -33,11 +32,11 @@ async function init (instance, req, res) {
     }
 
     if (name === 'shouldComponentUpdate') {
-      instance.props = {
+      instance.setProps({
         ...instance.props,
         request: req,
         response: res
-      }
+      })
       if (instance.props.response instanceof WebSocket) {
         logger('✅ is WebSocket')
       }
@@ -61,7 +60,7 @@ async function updater (instance, data) {
     throw "Should not update"
   }
 
-  instance.props = nextProps
+  instance.setProps(nextProps)
 
   const response = await instance.respond()
   await instance.setState(response)

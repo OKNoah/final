@@ -104,6 +104,7 @@ class User extends Component {
 
   async messageReceived (msg) {
     if (['moveUp', 'moveDown', 'moveLeft', 'moveRight', 'bug'].includes(msg)) {
+      console.log('this.actions', this.actions)
       this.actions[msg](this.props.params.player)
     } else {
       throw "That's not a function"

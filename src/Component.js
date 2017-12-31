@@ -35,6 +35,18 @@ export default class Final {
     return
   }
 
+  static async setProps (instance, state) {
+    instance.props = state
+
+    return
+  }
+
+  async setProps (state) {
+    await this.constructor.setProps(this, state)
+
+    return
+  }
+
   async shouldComponentUpdate (newProps) {
     if (newProps !== this.props) {
       return true

@@ -17,18 +17,15 @@ const reduxConnect = (mapStateToProps, mapActionsToDispatch) => (Component) => {
       })
     }
 
-    Component.prototype.actions = {
-      ...Component.prototype.actions,
-      ...actions
-    }
+    Object.assign(Component.prototype, { actions })
     Component.prototype.store = store
 
     const instance = new Component()
 
-    instance.props = {
+    instance.setProps({
       ...instance.props,
       ...props
-    }
+    })
 
     function socketHandler (data) {
       instance.lifecycleIncrement = 1
