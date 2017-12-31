@@ -6,9 +6,6 @@ import { findDecorator } from '../test/ArangoDecorator'
 })
 class User extends Final.Component {
   path = '/user/:user?'
-  constructor () {
-    super()
-  }
 
   async respond () {
     await this.findOne({ "body": "Updated!" })

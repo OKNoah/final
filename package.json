@@ -1,16 +1,34 @@
 {
-  "name": "final",
-  "version": "1.0.0-alpha.1",
-  "main": "index.js",
-  "author": "Noah",
+  "name": "final-server",
+  "description": "A component-based server framework for ES6+, with a React-like lifecycle. Experimental.",
+  "version": "0.9.1",
+  "main": "dist/index.js",
+  "author": "Noah Gray <noahgray@me.com> (https://github.com/oknoah)",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OKNoah/final.git"
+  },
   "scripts": {
-    "test:path": "./node_modules/.bin/tape -r @babel/register",
+    "prepublish": "./node_modules/.bin/babel ./src -d ./dist --ignore node_modules/ --ignore dist/",
     "test": "./node_modules/.bin/tape -r @babel/register './src/**/*.test.js' | ./node_modules/.bin/tap-notify | ./node_modules/.bin/faucet",
+    "test:path": "./node_modules/.bin/tape -r @babel/register",
     "test:watch": "./node_modules/.bin/onchange '**/*.js' -- yarn run test",
     "test:pathwatch": "./node_modules/.bin/onchange '**/*.js' -- yarn run test:path",
     "test:game-server": "curl -s -X GET --header 'Accept: application/json' 'http://localhost:3001/map/1/player/1234' | node -r @babel/register -e \"process.stdin.setEncoding('utf8'); var chunks = ''; process.stdin.on('readable', () => { const chunk = process.stdin.read(); if (chunk !== null) { chunks += chunk }}); process.stdin.on('end', () => { process.stdout.write(JSON.stringify(JSON.parse(chunks), null, 2)) ;});\""
   },
+  "keywords": [
+    "rest",
+    "restful",
+    "api",
+    "websockets",
+    "sockets",
+    "framework",
+    "server",
+    "arango",
+    "orm",
+    "web"
+  ],
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.35",
     "@babel/core": "^7.0.0-beta.35",

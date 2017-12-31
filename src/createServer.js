@@ -3,7 +3,7 @@ import { Server } from 'http'
 import { readdirSync } from 'fs'
 import { isArray } from 'lodash'
 import { Server as Socket } from 'ws'
-import EventEmitter from 'events'
+import { updater, logger } from './index'
 
 export default async function createServer ({
   directory,
@@ -24,16 +24,6 @@ export default async function createServer ({
 
   const server = new Socket({ server: myServer })
 
-  class Subscriptions extends EventEmitter {}
-
-  const subscriptions = new Subscriptions()
-
-  if (store) {
-    store.subscribe(() => {
-      subscriptions.emit('data')
-    })
-  }
-
   async function lifecycleHandler (req, res) {
     const items = await getComponents()
     const matches = []
@@ -41,37 +31,27 @@ export default async function createServer ({
     for (let i = 0; i < items.length; i++) {
       const item = items[i]
 
-      while (item.lifecycleIncrement < item.lifecycle.length) {
-        const step = item.lifecycleIncrement++
-        const func = item.lifecycle[step]
-
-        if (step === 0) {
-          try {
-            await func(req)
-          } catch (error) {
-            if (error !== 'No match') {
-              await item.componentDidCatch(error, {
-                stepName: `step ${step}`
-              })
-              break
-            }
-          }
-          matches.push(item)
-        }
-
-        if (step === 1) {
-          await func()
-        }
-
-        if (step === 2) {
-          const response = await func()
-          await item.setState(response)
-        }
-
-        if (step === 3) {
-          await func(res)
+      try {
+        logger('running init')
+        await updater.init(item, req, res)
+      } catch (error) {
+        if (error !== 'No match') {
+          logger('No match')
         }
       }
+
+      try {
+        await updater(item)
+      } catch (error) {
+        if (error !== 'No match') {
+          await item.componentDidCatch(error, {
+            stepName: `step ${item.lifecycleIncrement}`
+          })
+          break
+        }
+      }
+
+      matches.push(items[i])
     }
 
     return matches
@@ -110,23 +90,22 @@ export default async function createServer ({
   }
 
   async function socketHandler (socket, req) {
-    const items = await lifecycleHandler(req, socket)
+    let items = await lifecycleHandler(req, socket)
 
-    function reduxStateChange (state) {
-      items[0].respond()
-        .then(data => items[0].setState(data)
-          .then(() => items[0].responseDidEnd(socket)
-        )
-      )
-    }
-
-    subscriptions.addListener('data', reduxStateChange)
-
+    /*
+      Removes the redux event listener, if it is attached.
+    */
     socket.on('close', () => {
-      subscriptions.removeListener('data', reduxStateChange)
+      items.forEach((item) => item.end && item.end())
     })
-    socket.on('error', () => console.log('One player departed.'))
 
+    socket.on('error', (...data) => {
+      logger('One connection closed.', data)
+    })
+
+    /*
+      This should probably update `shouldComponentUpdate` some other lifectyle method rather than it's own special method. Or `updater`.
+    */
     socket.on('message', async (message) => {
       await items.map(async (item) => {
         try {
@@ -140,7 +119,7 @@ export default async function createServer ({
 
   server.on('connection', socketHandler)
 
-  server.on('error', console.error)
+  server.on('error', logger)
   myServer.on('error', console.error)
 
   myServer.on('request', async (req, res) => {

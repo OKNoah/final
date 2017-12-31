@@ -1,14 +1,12 @@
 import test from 'tape'
 import client from 'superagent'
 import Final, { reduxConnect } from './index'
-import { middleware, store } from '../examples/middleware'
+import { store } from '../examples/middleware'
 import { findDecorator } from '../test/ArangoDecorator'
-import { createStore, bind, bindActionCreators } from 'redux'
+import { bindActionCreators } from 'redux'
 import WS from 'ws'
 
 const HOST = 'localhost:3001'
-
-function testo () { return { type: 'TEST' } }
 
 @reduxConnect(
   null,
@@ -21,9 +19,6 @@ function testo () { return { type: 'TEST' } }
 })
 class User extends Final.Component {
   path = '/user/:user?'
-  constructor (props) {
-    super(props)
-  }
 
   async respond () {
     await this.save({ "body": "Updated!" })
