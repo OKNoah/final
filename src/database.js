@@ -1,19 +1,19 @@
 import { before } from 'toxic-decorators'
 import { Database } from 'arangojs'
-import Final from '../src'
+import { Component, hoist } from './index'
 
 /*
   For now it just uses the database named 'test'. We could put a place to change this in the decorator, but it will lead to redundant code. Instead, we will create a way to initialize the datebase in `createServer`, or in the `redux` equivelant.
 */
-const db = new Database({
-  url: 'http://root:@127.0.0.1:8529',
-  arangoVersion: 30300
-});
+export default function database (options) {
+  const db = new Database({
+    url: options.url || 'http://root:@127.0.0.1:8529',
+    arangoVersion: options.arangoVersion || 30300
+  });
 
-db.useDatabase('test')
+  db.useDatabase(options.database || 'test')
 
-export function findDecorator (options) {
-  const collection = db.collection(options.collection)
+  const collection = db.collection(options.collection || 'FinalUser')
 
   /*
     Check to make sure collection exists before doing any writes or queries. Will create collection if none exists.
@@ -29,8 +29,10 @@ export function findDecorator (options) {
     return
   }
 
+  checkCollection()
+
   return (target) => {
-    class DecoratedClass extends Final.Component {
+    class DecoratedClass extends Component {
       constructor (props) {
         super(props)
       }
@@ -42,6 +44,7 @@ export function findDecorator (options) {
       }
 
       async save (props) {
+        await checkCollection()
         if (this.schema) {
           this.schema.assert(props)
         }
@@ -60,6 +63,6 @@ export function findDecorator (options) {
       }
     }
 
-    return Final.hoist(target, DecoratedClass)
+    return hoist(target, DecoratedClass)
   }
 }

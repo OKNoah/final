@@ -29,16 +29,16 @@ WebSocket-functionality is built-in (at present). Depending on how you wish to u
 See the [`/examples`](examples) and files matching the patter [`**/*.test.js`](src) for more usage and explanation. Be warned the API will change a lot.
 
 ```js
-import Final, { reduxConnect } from './src/index'
+import Final, { reduxConnect, database } from './src/index'
 import { bindActionCreators } from 'redux'
-import { findDecorator } from './test/ArangoDecorator'
 import { middleware, store } from './example/middleware'
 import { moveUp } from './redux/modules/player'
+import { UserSchema } from './schemas' // not an actual thing that's included
 
 /*
   The `findDecorator` adds a few funtions to the class, like `this.findOne`.
 */
-@findDecorator({
+@database({
   // this decorator will verify collection or create new one
   collection: 'Post'
 })
@@ -55,6 +55,10 @@ class Post extends Final.Component {
     The path decides what requests will match this component and the params.
   */
   path = '/post/:post?'
+  /*
+    Define the schema which is enforced by the arango decorator on `save` commands.
+  */
+  schema = UserSchema 
 
   async respond () {
     console.log('this.props.params', this.props.params)

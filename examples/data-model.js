@@ -1,18 +1,10 @@
-import { Component, createServer } from '../src/index'
-import { findDecorator } from '../test/ArangoDecorator'
+import { Component, createServer, database } from '../src/index'
 import t from 'flow-runtime'
 
-function length (min, max) {
-  return function (input) {
-    if (input.length > max) {
-      return `must be less than ${max} characters`
-    }
-
-    if (input.length < min) {
-      return `must be more than ${min} characters`
-    }
-  }
-}
+/*
+  Returns error message if input is not between `min` and `max`.
+*/
+const length = (min, max) => (input) => (input.length > max || input.length < min) && (`must be between ${min + ' & ' + max} characters`)
 
 /*
   For now I'm using `flow-runtime`'s type test tool. When `flow-runtime` supports Babel 7 we will simply use it as intended. See https://github.com/OKNoah/final/issues/5
@@ -27,7 +19,8 @@ const UserSchema = t.type(
   )
 )
 
-@findDecorator({
+@database({
+  url: 'http://root:@127.0.0.1:8529',
   collection: 'FinalUser'
 })
 class User extends Component {

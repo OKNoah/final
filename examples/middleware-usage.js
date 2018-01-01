@@ -1,6 +1,5 @@
 import { createStore } from 'redux'
-import Final from '../src/index'
-import { findDecorator } from '../test/ArangoDecorator'
+import Final, { database } from '../src/index'
 import { middleware, store, reducer } from '../examples/middleware'
 
 /*
@@ -45,7 +44,7 @@ async function sessionMiddleware (/*globalStore*/) {
   }
 }
 
-@findDecorator({
+@database({
   collection: 'FinalUser'
 })
 class User extends Final.Component {
