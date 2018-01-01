@@ -41,9 +41,14 @@ export function findDecorator (options) {
         return cursor
       }
 
-      @before(checkCollection)
       async save (props) {
-        const data = await collection.save(props)
+        if (this.schema) {
+          this.schema.assert(props)
+        }
+
+        props._createdAt = new Date().toISOString()
+        props._removed = false
+        const data = await collection.save(props, { returnNew: true })
         return data
       }
 

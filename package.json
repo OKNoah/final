@@ -49,7 +49,7 @@
     "tape": "github:substack/tape"
   },
   "dependencies": {
-    "arangojs": "4",
+    "arangojs": "6.0.0-alpha.4",
     "lodash": "^4.17.4",
     "path-match": "^1.2.4",
     "toxic-decorators": "^0.3.8",

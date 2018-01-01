@@ -62,15 +62,16 @@ async function updater (instance, data) {
 
   instance.setProps(nextProps)
 
-  const response = await instance.respond()
-  await instance.setState(response)
-  logger('responseDidEnd instance.props', Object.getOwnPropertyNames(instance.props))
   try {
+    const response = await instance.respond()
+    await instance.setState(response)
+    logger('responseDidEnd instance.props', Object.getOwnPropertyNames(instance.props))
     await instance.responseDidEnd()
   } catch (e) {
     if (e.message === 'not opened') {
       logger('Socket not open.')
     }
+    await instance.componentDidCatch(e || "An unknown server error occured.")
     return
   }
 }

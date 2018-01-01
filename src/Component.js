@@ -1,10 +1,4 @@
-import { parse } from 'url'
-
-const route = require('path-match')({
-  sensitive: false,
-  strict: false,
-  end: false
-})
+import WebSocket from 'ws'
 
 export default class Final {
   lifecycleIncrement = -1;
@@ -71,18 +65,22 @@ export default class Final {
     const data = JSON.stringify(this.state)
     const length = Buffer.byteLength(data)
 
-    try {
-      this.props.response.writeHead(200, {
-        'Content-Length': length,
-        'Content-Type': 'application/json'
-      })
-      this.props.response.end(data)
-      if (this.end) {
-        this.end()
-      }
-    } catch (e) {
+    if (this.props.response instanceof WebSocket) {
       this.props.response.send(data)
+      return
     }
+
+    this.props.response.writeHead(200, {
+      'Content-Length': length,
+      'Content-Type': 'application/json'
+    })
+
+    this.props.response.end(data)
+
+    if (this.end) {
+      this.end()
+    }
+      
     return
   }
 
@@ -91,8 +89,22 @@ export default class Final {
   }
 
   async componentDidCatch (error, info) {
-    console.error(`Check the ${info.stepName} function.`)
-    console.error(error)
+    // console.error(`Check the ${info.stepName} function.`)
+
+    if (this.end) {
+      this.end()
+    }
+
+    if (this.props.response instanceof WebSocket) {
+      return
+    }
+
+    this.props.response.writeHead(500, {
+      'Content-Type': 'application/json'
+    })
+    this.props.response.end(error.message)
+
+    return
   }
 
   async tick () {
