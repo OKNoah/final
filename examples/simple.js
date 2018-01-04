@@ -1,24 +1,27 @@
-import Final from '../src/index'
-import { findDecorator } from '../test/ArangoDecorator'
+import Final, { database, createServer } from '../src/index'
+import { UserSchema } from './data-model'
 
-@findDecorator({
+@database({
   collection: 'FinalUser'
 })
 class User extends Final.Component {
   path = '/user/:user?'
+  schema = UserSchema
 
-  async respond () {
-    await this.findOne({ "body": "Updated!" })
-    return {
-      data: 'hi',
-      params: this.props.params
-    }
+  async get () {
+    const user = await this.findOne({ name: this.props.params.user })
+
+    return user
+  }
+
+  async post () {
+    const user = await this.save(this.props.body)
+
+    return user
   }
 }
 
-const PORT = 3001
-
-Final.createServer({
+createServer({
   components: [User],
-  port: PORT
+  port: process.env.PORT || 3001
 })

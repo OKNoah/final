@@ -1,7 +1,7 @@
 import { createStore, bindActionCreators, combineReducers } from 'redux'
 import { createServer, Component, reduxConnect } from '../src/index'
 import { makeBug } from '../test/game-server_fake-player.js'
-import difference from './object-diff'
+import difference from 'just-the-diff'
 
 const PORT = 3001
 
@@ -105,7 +105,7 @@ class User extends Component {
 
   async componentWillRespond (nextProps) {
     if (nextProps) {
-      const diff = difference(this.props.players, nextProps.players)
+      const diff = difference(nextProps.players, this.props.players)
       let diffs = {}
 
       if (diff) {

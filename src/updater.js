@@ -1,6 +1,7 @@
 import { parse } from 'url'
 import { logger } from './index'
 import WebSocket from 'ws'
+import bodyParse from 'co-body'
 
 const route = require('path-match')({
   sensitive: false,
@@ -10,7 +11,6 @@ const route = require('path-match')({
 
 async function init (instance, req, res) {
   for (let i = 1; i <= 2; i++) {
-    // const step = await instance.tick()
     const func = instance.lifecycle[i - 1]
     const name = func && func.name && func.name.split(' ')[1]
 
@@ -23,18 +23,28 @@ async function init (instance, req, res) {
       const params = match(pathname)
       instance.setProps({
         ...instance.props,
-        params
+        params,
+        method: req.method.toUpperCase()
       })
       if (!instance.props.params) {
         // logger('No match pathname', pathname)
         throw 'No match'
+      } else if (['POST', 'PATCH'].includes(instance.props.method)) {
+        const body = await bodyParse.json(req)
+
+        instance.setProps({
+          ...instance.props,
+          body
+        })
       }
     }
 
+    /*
+      TODO: Perhaps the `response` object should be removed and replaced with simply an action to do sending. We abstract the HTTP API (`res.wreiteHead()` and `res.end()`) and make it match the websockets API (`res.send()`)
+    */
     if (name === 'shouldComponentUpdate') {
       instance.setProps({
         ...instance.props,
-        request: req,
         response: res
       })
       if (instance.props.response instanceof WebSocket) {
