@@ -1,3 +1,4 @@
+import { ServerResponse } from 'http'
 import WebSocket from 'ws'
 
 export default class Final {
@@ -20,7 +21,7 @@ export default class Final {
   static async setState (instance, state) {
     instance.state = state
 
-    return
+    return instance.state
   }
 
   async setState (state) {
@@ -29,14 +30,14 @@ export default class Final {
     return
   }
 
-  static async setProps (instance, state) {
-    instance.props = state
+  static async setProps (instance, props) {
+    instance.props = props
 
-    return
+    return instance.props
   }
 
-  async setProps (state) {
-    await this.constructor.setProps(this, state)
+  async setProps (props) {
+    await this.constructor.setProps(this, props)
 
     return
   }
@@ -85,17 +86,60 @@ export default class Final {
   }
 
   async respond () {
-    return { date: Date.now() }
-  }
+    let response = {}
 
-  async componentDidCatch (error, info) {
-    // console.error(`Check the ${info.stepName} function.`)
-
-    if (this.end) {
-      this.end()
+    if (this.props.response instanceof ServerResponse) {
+      switch (this.props.request.method.toUpperCase()) {
+        case 'GET':
+          response = await this.get()
+          break
+        case 'POST':
+          response = await this.post()
+          break
+        case 'PATCH':
+          response = await this.patch()
+          break
+        case 'DELETE':
+          response = await this.delete()
+          break
+        default:
+          response = this.props.request.method.toUpperCase()
+      }
+    } else {
+      response = await this.socket()
     }
 
+    return response
+  }
+
+  async get () {
+    return {}
+  }
+
+  async post () {
+    return {}
+  }
+
+  async patch () {
+    return {}
+  }
+
+  async delete () {
+    return {}
+  }
+
+  async socket () {
+    return {}
+  }
+
+  async componentDidCatch (error) {
     if (this.props.response instanceof WebSocket) {
+      this.props.response.send(error.message)
+
+      if (this.end) {
+        this.end()
+      }
+
       return
     }
 

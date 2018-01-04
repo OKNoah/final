@@ -53,6 +53,7 @@
     "arangojs": "6.0.0-alpha.4",
     "lodash": "^4.17.4",
     "path-match": "^1.2.4",
+    "redux": "^3.7.2",
     "toxic-decorators": "^0.3.8",
     "ws": "^3.3.3"
   }

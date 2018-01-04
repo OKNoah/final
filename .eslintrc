@@ -11,7 +11,9 @@
     "require": false,
     "__dirname": false,
     "setTimeout": false,
-    "console": false
+    "console": false,
+    "setInterval": false,
+    "Buffer": false
   },
   "parser": "babel-eslint",
   "parserOptions": {
@@ -35,6 +37,7 @@
     "spaced-comment": 0,
     "max-len": 0,
     "semi": 0,
-    "arrow-parens": 0
+    "arrow-parens": 0,
+    "no-console": 1
   }
 }

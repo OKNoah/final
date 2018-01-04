@@ -1,6 +1,7 @@
 import { createStore, bindActionCreators, combineReducers } from 'redux'
 import { createServer, Component, reduxConnect } from '../src/index'
 import { makeBug } from '../test/game-server_fake-player.js'
+import difference from './object-diff'
 
 const PORT = 3001
 
@@ -102,9 +103,30 @@ class User extends Component {
     super()
   }
 
+  async componentWillRespond (nextProps) {
+    if (nextProps) {
+      const diff = difference(this.props.players, nextProps.players)
+      let diffs = {}
+
+      if (diff) {
+        for (const key in diff) {
+          diffs = {
+            ...diffs,
+            [key]: [ 
+              diff[key][0] || this.props.players[key][0],
+              diff[key][1] || this.props.players[key][1]
+            ]
+          }
+        }
+
+        this.setState({ diff: diffs })
+      }
+    }
+    return
+  }
+
   async messageReceived (msg) {
     if (['moveUp', 'moveDown', 'moveLeft', 'moveRight', 'bug'].includes(msg)) {
-      console.log('this.actions', this.actions)
       this.actions[msg](this.props.params.player)
     } else {
       throw "That's not a function"
@@ -113,12 +135,23 @@ class User extends Component {
     return
   }
 
-  async respond () {
+  async get () {
     return {
       data: this.props.players
     }
   }
+
+  async socket () {
+    return this.state.diff || this.props.players
+  }
 }
+
+// class E404 extends Component {
+//   path = '**/*'
+//   respond () {
+//     return 404
+//   }
+// }
 
 createServer({
   components: [User],

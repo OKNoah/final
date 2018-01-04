@@ -35,18 +35,17 @@ export default async function createServer ({
         logger('running init')
         await updater.init(item, req, res)
       } catch (error) {
-        if (error !== 'No match') {
-          logger('No match')
+        if (error === 'No match') {
+          continue
         }
+        console.error(error)
       }
 
       try {
         await updater(item)
       } catch (error) {
         if (error !== 'No match') {
-          await item.componentDidCatch(error, {
-            stepName: `step ${item.lifecycleIncrement}`
-          })
+          await item.componentDidCatch(error)
           break
         }
       }

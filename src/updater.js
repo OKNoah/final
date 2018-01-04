@@ -60,9 +60,9 @@ async function updater (instance, data) {
     throw "Should not update"
   }
 
-  instance.setProps(nextProps)
-
   try {
+    await instance.componentWillRespond(nextProps)
+    instance.setProps(nextProps)
     const response = await instance.respond()
     await instance.setState(response)
     logger('responseDidEnd instance.props', Object.getOwnPropertyNames(instance.props))
