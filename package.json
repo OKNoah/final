@@ -43,6 +43,7 @@
     "eslint": "^4.13.1",
     "faucet": "^0.0.1",
     "flow-bin": "^0.61.0",
+    "just-the-diff": "^0.1.1",
     "onchange": "^3.3.0",
     "superagent": "^3.8.2",
     "tap-notify": "^1.0.0",
@@ -51,8 +52,11 @@
   },
   "dependencies": {
     "arangojs": "6.0.0-alpha.4",
+    "busboy": "^0.2.14",
+    "co-body": "^5.1.1",
     "lodash": "^4.17.4",
     "path-match": "^1.2.4",
+    "redux": "^3.7.2",
     "toxic-decorators": "^0.3.8",
     "ws": "^3.3.3"
   }

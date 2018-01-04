@@ -158,7 +158,7 @@ export default function database (options) {
 
         if (this.schema) {
           try {
-            this.schema.assert(props)
+            await this.schema.assert(props)
           } catch (e) {
             const errors = e.message.split('-------------------------------------------------\n\n')
             const messages = errors.map(error => error.split('\n')[0])
