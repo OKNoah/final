@@ -1,73 +1,50 @@
 import test from 'tape'
-import client from 'superagent'
-import Final, { reduxConnect } from './index'
+import { Component, reduxConnect } from './index'
 import { store } from '../examples/middleware'
 import { database } from './index'
 import { bindActionCreators } from 'redux'
-import WS from 'ws'
-
-const HOST = 'localhost:3001'
 
 @reduxConnect(
-  null,
+  (state) => ({
+    count: state.count
+  }),
   (dispatch) => bindActionCreators({
-    increment: () => ({ type: 'GET_WHATEVER', result: { date: Date.now() } })
+    increment: () => ({ type: 'GET_WHATEVER' })
   }, dispatch)
 )
 @database({
   collection: 'FinalUser'
 })
-class User extends Final.Component {
+class UserComponent extends Component {
   path = '/user/:user?'
 
   async respond () {
     await this.save({ "body": "Updated!" })
-    const data = await this.findOne({ "body": "Updated!" })
     await this.actions.increment()
     return {
-      data,
       params: this.props.params,
       state: this.store.getState()
     }
   }
 }
 
-const PORT = process.env.PORT || 3001
-let server = {}
+test('create User', (t) => {
+  const User = new UserComponent(store)
 
-test('start server with components', async t => {
-  server = await Final.createServer({
-    components: [User],
-    port: PORT,
-    store,
-    // middleware
-  })
+  t.ok(typeof User.save === 'function', 'should have save function')
+  t.ok(typeof User.respond === 'function', 'should have respond function')
+  t.ok(typeof User.actions.increment === 'function', 'should have respond function')
 
-  t.ok(server, 'server should be truthy')
-  t.ok(server.close, 'server.close should exist')
   t.end()
 })
 
-test('get response', (t) => {
-  client
-    .get(HOST + '/user/1')
-    .then((response) => {
-      t.equal(response.status, 200)
-      t.equal(response.body.params.user, "1")
-      t.ok(response.body.state.count !== undefined, 'should have `count` property on `body.state`')
-      t.equal(response.body.state.count, 1, 'should always be 1')
-      t.ok(response.body.data)
-      t.end()
-    })
+test('create User', async (t) => {
+  const User = new UserComponent(store)
+
+  t.ok(typeof User.actions.increment === 'function', 'should have respond function')
+  t.ok(Number.isInteger(User.props.count), 'count should be number')
+  const response = await User.respond()
+  t.ok(response.state.count, 'count should be 1')
+
+  t.end()
 })
-
-test('upgrade to web sockets', (t) => {
-  const ws = new WS('ws://' + HOST)
-
-  ws.on('open', () => {
-    t.ok(ws, 'should open websockets connection')
-    server.close(t.end())
-  })
-})
-
-// test.onFailure(() => server.close())
