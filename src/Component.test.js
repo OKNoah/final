@@ -2,7 +2,7 @@ import test from 'tape'
 import client from 'superagent'
 import Final, { reduxConnect } from './index'
 import { store } from '../examples/middleware'
-import { findDecorator } from '../test/ArangoDecorator'
+import { database } from './index'
 import { bindActionCreators } from 'redux'
 import WS from 'ws'
 
@@ -14,7 +14,7 @@ const HOST = 'localhost:3001'
     increment: () => ({ type: 'GET_WHATEVER', result: { date: Date.now() } })
   }, dispatch)
 )
-@findDecorator({
+@database({
   collection: 'FinalUser'
 })
 class User extends Final.Component {

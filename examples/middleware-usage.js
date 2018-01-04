@@ -1,7 +1,10 @@
 import { createStore } from 'redux'
-import Final from '../src/index'
-import { findDecorator } from '../test/ArangoDecorator'
+import Final, { database } from '../src/index'
 import { middleware, store, reducer } from '../examples/middleware'
+
+/*
+  As of right now, middleware doesn't really work. Make an issue if you can think of the proper need for middleware and how you'd have it work.
+*/
 
 /*
   You can run this example in node like this (run yarn install if you don't have @babel/register):
@@ -45,7 +48,7 @@ async function sessionMiddleware (/*globalStore*/) {
   }
 }
 
-@findDecorator({
+@database({
   collection: 'FinalUser'
 })
 class User extends Final.Component {
