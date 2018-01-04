@@ -3,6 +3,10 @@ import Final, { database } from '../src/index'
 import { middleware, store, reducer } from '../examples/middleware'
 
 /*
+  As of right now, middleware doesn't really work. Make an issue if you can think of the proper need for middleware and how you'd have it work.
+*/
+
+/*
   You can run this example in node like this (run yarn install if you don't have @babel/register):
 
   `node -r @babel/register examples/middleware-usage.js`

@@ -46,7 +46,8 @@
     "onchange": "^3.3.0",
     "superagent": "^3.8.2",
     "tap-notify": "^1.0.0",
-    "tape": "github:substack/tape"
+    "tape": "github:substack/tape",
+    "validator": "^9.2.0"
   },
   "dependencies": {
     "arangojs": "6.0.0-alpha.4",

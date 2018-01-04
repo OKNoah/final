@@ -40,7 +40,9 @@ import { UserSchema } from './schemas' // not an actual thing that's included
 */
 @database({
   // this decorator will verify collection or create new one
-  collection: 'Post'
+  collection: 'Post',
+  url: 'http://root:@127.0.0.1:8529', // this value is the default
+  arangoVersion: 30300 // this is also the default
 })
 @reduxConnect(
   (state) => ({
@@ -63,7 +65,9 @@ class Post extends Final.Component {
   async respond () {
     console.log('this.props.params', this.props.params)
     console.log('this.actions.moveUp', this.action.moveUp)
-    const output = await this.actions.findOne({"body": "Updated!"})
+    const output = await this.actions.findOne({
+      where: {"body": "Updated!"} // The `database` has special find functions with query-building
+    })
     return {
       data: {
         players: this.props.players,
