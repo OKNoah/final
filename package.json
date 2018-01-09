@@ -54,6 +54,8 @@
     "arangojs": "6.0.0-alpha.4",
     "busboy": "^0.2.14",
     "co-body": "^5.1.1",
+    "core-decorators": "^0.20.0",
+    "flow-runtime": "^0.16.0",
     "lodash": "^4.17.4",
     "path-match": "^1.2.4",
     "redux": "^3.7.2",
