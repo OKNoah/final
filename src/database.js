@@ -1,12 +1,22 @@
 import { before } from 'toxic-decorators'
 import { Database } from 'arangojs'
 import { Component, hoist } from './index'
+import t from 'flow-runtime'
 import queryBuilder from './queryBuilder'
+
+const OptionsSchema = t.type('ArangoOptions', t.object(
+  t.property('edge', t.string(), true),
+  t.property('collection', t.string(), true)
+))
 
 /*
   For now it just uses the database named 'test'. We could put a place to change this in the decorator, but it will lead to redundant code. Instead, we will create a way to initialize the datebase in `createServer`, or in the `redux` equivelant.
 */
 export default function database (options) {
+  OptionsSchema.assert(options)
+
+  const name = options.collection || options.edge
+
   const db = new Database({
     url: options.url || 'http://root:@127.0.0.1:8529',
     arangoVersion: options.arangoVersion || 30300
@@ -14,14 +24,20 @@ export default function database (options) {
 
   db.useDatabase(options.database || 'test')
 
-  const collection = db.collection(options.collection || 'FinalUser')
+  let collection = {}
+
+  if (options.edge) {
+    collection = db.edgeCollection(name)
+  } else {
+    collection = db.collection(name)
+  }
 
   /*
     Check to make sure collection exists before doing any writes or queries. Will create collection if none exists.
   */
   const checkCollection = async () => {
     const collections = await db.listCollections()
-    const colExists = collections.map(c => c.name).includes(options.collection)
+    const colExists = collections.map(c => c.name).includes(name)
     if (colExists) {
       return
     }
@@ -95,8 +111,10 @@ export default function database (options) {
         return props
       }
 
-      async save (props) {
+      async save (...args) {
         await checkCollection()
+        const isCollection = typeof options.collection === 'string'
+        let props = isCollection ? args[0] : args[2] || {}
 
         if (this.schema) {
           try {
@@ -109,10 +127,21 @@ export default function database (options) {
           }
         }
 
+        // we add a custom _createdAt attribute to all documents for ease
         props._createdAt = new Date().toISOString()
         props._removed = false
-        const data = await collection.save(props, { returnNew: true })
-        return data.new
+
+        // add _from and _to properties if it's an edge document
+        if (!isCollection) {
+          props._from = typeof args[0] === 'object' ? args[0]._id : args[0]
+          props._to = typeof args[1] === 'object' ? args[1]._id : args[1]
+        }
+
+        // add `returnNew` option only if it's a collection. edge does not support it.
+        const values = [props, isCollection ? { returnNew: true } : undefined]
+
+        const data = await collection.save(...values)
+        return isCollection ? data.new : data
       }
 
       @before(checkCollection)

@@ -50,9 +50,16 @@ class PostComponent extends Component {
   )
 }
 
-test('schema validation', async (tt) => {
-  const User = new UserComponent()
+@database({
+  edge: 'FinalLike'
+})
+class LikeComponent extends Component {}
 
+const Post = new PostComponent()
+const User = new UserComponent()
+const Like = new LikeComponent()
+
+test('schema validation', async (tt) => {
   try {
     await User.save({
       name: 'jo',
@@ -69,7 +76,6 @@ test('schema validation', async (tt) => {
 })
 
 test('schema validation - no errors', async (tt) => {
-  const User = new UserComponent()
   const user = await User.save({
     name: 'joe-joe',
     email: '123@me.com'
@@ -85,7 +91,6 @@ test('schema validation - no errors', async (tt) => {
 })
 
 test('find function', async (tt) => {
-  const User = new UserComponent()
   const users = await User.find({
     where: { name: 'joe-joe', email: '123@me.com' }
   })
@@ -96,7 +101,6 @@ test('find function', async (tt) => {
 })
 
 test('findOne function', async (tt) => {
-  const User = new UserComponent()
   const user = await User.findOne({
     where: { name: 'joe-joe', email: '123@me.com' }
   })
@@ -112,7 +116,6 @@ test('findOne function', async (tt) => {
 })
 
 test('findAndCount function', async (tt) => {
-  const User = new UserComponent()
   const { data, meta } = await User.findAndCount({
     where: { name: 'joe-joe', email: '123@me.com' }
   })
@@ -124,8 +127,6 @@ test('findAndCount function', async (tt) => {
 })
 
 test('including docs when saving', async (tt) => {
-  const Post = new PostComponent()
-  const User = new UserComponent()
   const user = await User.findOne({
     where: { name: 'joe-joe', email: '123@me.com' }
   })
@@ -141,7 +142,6 @@ test('including docs when saving', async (tt) => {
 })
 
 test('including docs when finding', async (tt) => {
-  const Post = new PostComponent()
   const post = await Post.findOne({
     where: { body: 'I ❤️ Arango' },
     include: [{
@@ -152,5 +152,16 @@ test('including docs when finding', async (tt) => {
   tt.ok(post._id, 'new post should be created')
   tt.ok(post.user, 'post should have user key')
   tt.ok(post.user._id, 'post user should have _id')
+  tt.end()
+})
+
+test('creating edge documents', async (tt) => {
+  const user = await User.findOne({ where: { name: 'joe-joe' } })
+  const post = await Post.findOne({ where: { body: 'I ❤️ Arango' } })
+
+  const like = await Like.save(user, post)
+
+  tt.ok(like, 'edge should be created')
+  tt.ok(like._id, 'edge have _id proptery')
   tt.end()
 })
