@@ -3,18 +3,14 @@
 */
 import test from 'tape'
 import t from 'flow-runtime'
-import { isEmail } from 'validator'
 
 import { Component, database } from './index'
-
-const length = (min, max) => (input) => (input.length > max || input.length < min) && (`must be between ${min + ' & ' + max} characters`)
-const email = (input) => (!isEmail(input)) && (`should be an email address`)
-const arangoId = (input) => (!/^[a-z|A-Z]+\/\d+/g.test(input)) && (`should be an ArangoDB id string`)
+import { StringLengthType, CollectionType, EmailType } from './types'
 
 const UserSchema = t.type(
   'User', t.object(
-    t.property('name', t.refinement(t.string(), length(3, 16))),
-    t.property('email', t.refinement(t.string(), email)),
+    t.property('name', StringLengthType(3, 16)),
+    t.property('email', EmailType),
     t.property('body', t.string(), true)
   )
 )
@@ -45,7 +41,7 @@ class PostComponent extends Component {
   schema = t.type(
     'User', t.object(
       t.property('body', t.string()),
-      t.property('user', t.type('ArangoId', t.refinement(t.string(), arangoId)))
+      t.property('user', CollectionType)
     )
   )
 }

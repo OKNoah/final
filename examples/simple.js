@@ -9,7 +9,9 @@ class User extends Final.Component {
   schema = UserSchema
 
   async get () {
-    const user = await this.findOne({ name: this.props.params.user })
+    const user = await this.findOne({
+      where: { name: this.props.params.user }
+    })
 
     return user
   }
