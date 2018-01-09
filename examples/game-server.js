@@ -146,13 +146,6 @@ class User extends Component {
   }
 }
 
-// class E404 extends Component {
-//   path = '**/*'
-//   respond () {
-//     return 404
-//   }
-// }
-
 createServer({
   components: [User],
   port: PORT,

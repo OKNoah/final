@@ -7,9 +7,12 @@ import { UserSchema } from './data-model'
 class User extends Final.Component {
   path = '/user/:user?'
   schema = UserSchema
+  uniques = ['email']
 
   async get () {
-    const user = await this.findOne({ name: this.props.params.user })
+    const user = await this.findOne({
+      where: { name: this.props.params.user }
+    })
 
     return user
   }

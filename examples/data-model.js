@@ -1,23 +1,17 @@
-import { Component, database } from '../src/index'
+import { Component, database, types } from '../src/index'
 import t from 'flow-runtime'
-import { isEmail } from 'validator'
 
-/*
-  Returns error message if input is not between `min` and `max`.
-*/
-const length = (min, max) => (input) => (input.length > max || input.length < min) && (`must be between ${min + ' & ' + max} characters`)
-const email = (input) => (!isEmail(input)) && (`should be an email address`)
+// there is also an important CollectionType for joining documents
+const { StringLengthType, EmailType } = types
 
 /*
   For now I'm using `flow-runtime`'s type test tool. When `flow-runtime` supports Babel 7 we will simply use it as intended. See https://github.com/OKNoah/final/issues/5
 */
 export const UserSchema = t.type(
   'User', t.object(
-    /*
-      The third arg in `t.property` makes the whole key/value optional.
-    */
-    t.property('name', t.refinement(t.string(), length(3, 16))),
-    t.property('email', t.refinement(t.string(), email)),
+    t.property('name', StringLengthType(3, 16)),
+    t.property('email', EmailType),
+    /* The third arg in `t.property` makes the whole key/value optional. */
     t.property('body', t.string(), true)
   )
 )
@@ -28,6 +22,7 @@ export const UserSchema = t.type(
 })
 class User extends Component {
   schema = UserSchema
+  uniques = ['email']
   path = '/user/:user?'
 
   async respond () {
