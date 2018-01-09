@@ -1,6 +1,7 @@
 import { before } from 'toxic-decorators'
 import { Database } from 'arangojs'
 import { Component, hoist } from './index'
+import queryBuilder from './queryBuilder'
 
 /*
   For now it just uses the database named 'test'. We could put a place to change this in the decorator, but it will lead to redundant code. Instead, we will create a way to initialize the datebase in `createServer`, or in the `redux` equivelant.
@@ -35,90 +36,17 @@ export default function database (options) {
     class DecoratedClass extends Component {
       constructor (props) {
         super(props)
+        this.props.collection = collection
       }
 
       async find (args, opts = { andCount: false }) {
         const { andCount } = opts
         await checkCollection()
-        let { skip, limit, where, attributes, sort, include } = args
 
-        const bindVars = {
-          '@modelName': options.collection,
-          limit: limit || 25,
-          skip: skip || 0
-        }
-
-        const getWhere = () => {
-          let count = 0
-          const wheres = []
-          for (const key in where) {
-            const prop = `wherekey${count}`
-            const value = `wherevalue${count}`
-            bindVars[prop] = key
-            bindVars[value] = where[key]
-            wheres[count] = ' filter instance.@' + prop + ' == @' + value + ' '
-            count++
-          }
-
-          return wheres.join('\n')
-        }
-
-        if (include) {
-          bindVars.includeAs = include.as
-        }
-
-        if (attributes) {
-          bindVars.attributes = attributes
-        }
-
-        /* Begin */
-        let query = `let data = (
-          for instance in @@modelName
-          filter instance._removed != true
-        `
-
-        if (where) {
-          query += getWhere()
-        }
-
-        if (sort) {
-          const sortArray = sort.split(' ')
-          const direction = sortArray[1].toLowerCase()
-          if (['asc', 'desc'].includes(direction)) {
-            query += `\n sort instance.@sortparam @sortDirection`
-            bindVars.sortparam = sortArray[0]
-            bindVars.sortDirection = direction
-          } else {
-            throw new Error('Your sort parameter should look like this `sort: "createdAt desc"` or `sort: "name asc"`. Looks like you are using something other than "ASC" or "DESC". File a bug if report you want!')
-          }
-        }
-
-        query += ` return instance ) \n` // ends data = (...)
-        query += ` return {
-          data: (
-            for instance in data
-              limit @skip, @limit
-        `
-
-        if (attributes) {
-          bindVars.attributes = attributes
-          query += ` return KEEP(instance, @attributes) \n ), \n`
-        } else if (attributes && include) {
-          query += `
-              let atts = KEEP(instance, @attributes)
-              return MERGE(atts, { @includeAs: DOCUMENT(instance[@includeAs]) }) \n), \n
-          `
-        } else if (include) {
-          query += ` return MERGE(instance, { @includeAs: DOCUMENT(instance[@includeAs]) }) \n), \n`
-        } else {
-          query += ` return instance )`
-        }
-
-        if (andCount) {
-          query += `, \n meta: { count: LENGTH(data) }`
-        }
-
-        query += ` \n }`
+        const { query, bindVars } = await queryBuilder({
+          ...args,
+          collection: options.collection
+        })
 
         const cursor = await db.query({
           query, 
@@ -134,7 +62,7 @@ export default function database (options) {
             }
           }
 
-          return documents[0]
+          return documents[0].data
         }
       }
 
@@ -142,9 +70,7 @@ export default function database (options) {
         await checkCollection()
         args.limit = 1
         const results = await this.find(args)
-        return {
-          data: results.data[0]
-        }
+        return results[0]
       }
 
       async findAndCount (args) {
@@ -153,11 +79,28 @@ export default function database (options) {
         return results
       }
 
+      /*
+        This function looks through the schema to find fields that use the ArangoId type. If they do, they altered from an object to just a string (`object._id`) if they aren't already an `_id` string. It is for convenience, if all docs are saved as `_id` strings, then there would be no need for this.
+      */
+      async processDocuments (props) {
+        this.schema.type.properties.map((prop) => {
+          const isString = typeof props[prop.key] === 'string'
+          const isIdField = prop.value.name === 'ArangoId'
+
+          if (isIdField && !isString) {
+            props[prop.key] = props[prop.key]._id
+          }
+        })
+
+        return props
+      }
+
       async save (props) {
         await checkCollection()
 
         if (this.schema) {
           try {
+            props = await this.processDocuments(props)
             await this.schema.assert(props)
           } catch (e) {
             const errors = e.message.split('-------------------------------------------------\n\n')

@@ -9,6 +9,7 @@ import { Component, database } from './index'
 
 const length = (min, max) => (input) => (input.length > max || input.length < min) && (`must be between ${min + ' & ' + max} characters`)
 const email = (input) => (!isEmail(input)) && (`should be an email address`)
+const arangoId = (input) => (!/^[a-z|A-Z]+\/\d+/g.test(input)) && (`should be an ArangoDB id string`)
 
 const UserSchema = t.type(
   'User', t.object(
@@ -35,6 +36,18 @@ class UserComponent extends Component {
       state: this.store.getState()
     }
   }
+}
+
+@database({
+  collection: 'FinalPost'
+})
+class PostComponent extends Component {
+  schema = t.type(
+    'User', t.object(
+      t.property('body', t.string()),
+      t.property('user', t.type('ArangoId', t.refinement(t.string(), arangoId)))
+    )
+  )
 }
 
 test('schema validation', async (tt) => {
@@ -77,14 +90,14 @@ test('find function', async (tt) => {
     where: { name: 'joe-joe', email: '123@me.com' }
   })
 
-  tt.ok(users.data.length >= 1, 'should return array with at least one item')
+  tt.ok(users.length >= 1, 'should return array with at least one item')
 
   tt.end()
 })
 
 test('findOne function', async (tt) => {
   const User = new UserComponent()
-  const { data: user } = await User.findOne({
+  const user = await User.findOne({
     where: { name: 'joe-joe', email: '123@me.com' }
   })
 
@@ -107,5 +120,37 @@ test('findAndCount function', async (tt) => {
   tt.ok(Array.isArray(data), 'should return data data')
   tt.ok(Number.isInteger(meta.count), 'should return meta.count number')
 
+  tt.end()
+})
+
+test('including docs when saving', async (tt) => {
+  const Post = new PostComponent()
+  const User = new UserComponent()
+  const user = await User.findOne({
+    where: { name: 'joe-joe', email: '123@me.com' }
+  })
+
+  const newPost = await Post.save({
+    body: 'I ❤️ Arango',
+    user
+  })
+
+  tt.ok(newPost._id, 'new post should be created')
+  tt.equal(newPost.user, user._id, 'post should be user _id')
+  tt.end()
+})
+
+test('including docs when finding', async (tt) => {
+  const Post = new PostComponent()
+  const post = await Post.findOne({
+    where: { body: 'I ❤️ Arango' },
+    include: [{
+      as: 'user'
+    }]
+  })
+
+  tt.ok(post._id, 'new post should be created')
+  tt.ok(post.user, 'post should have user key')
+  tt.ok(post.user._id, 'post user should have _id')
   tt.end()
 })
