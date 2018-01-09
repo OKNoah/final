@@ -58,7 +58,8 @@ class Post extends Final.Component {
   /*
     Define the schema which is enforced by the arango decorator on `save` commands.
   */
-  schema = UserSchema 
+  schema = UserSchema
+  uniques = ['email']
 
   async respond () {
     console.log('this.props.params', this.props.params)

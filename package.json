@@ -1,7 +1,7 @@
 {
   "name": "final-server",
   "description": "A component-based server framework for ES6+, with a React-like lifecycle. Experimental.",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "main": "dist/index.js",
   "author": "Noah Gray <noahgray@me.com> (https://github.com/oknoah)",
   "license": "MIT",
