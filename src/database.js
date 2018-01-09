@@ -1,4 +1,3 @@
-import { before } from 'toxic-decorators'
 import { Database } from 'arangojs'
 import { Component, hoist } from './index'
 import t from 'flow-runtime'
@@ -32,18 +31,42 @@ export default function database (options) {
     collection = db.collection(name)
   }
 
+  // Attemps to see if the index of the instance.uniques already exists in the list of uniques. If not, it creates the index
+  async function checkIndexes (instance) {
+    if (instance && instance.uniques) {
+      const indexes = await collection.indexes()
+      const paths = instance.uniques.map(unique => {
+        return JSON.stringify(Array.isArray(unique) ? unique.sort() : [unique])
+      })
+      const uniques = indexes.map(index => {
+        return JSON.stringify(index.fields.sort())
+      })
+      paths.map(async (path) => {
+        if (!uniques.includes(path)) {
+          try {
+            await collection.createHashIndex(JSON.parse(path), true)
+          } catch (e) {
+            console.error(e)
+          }
+        }
+      })
+    }
+  }
+
   /*
     Check to make sure collection exists before doing any writes or queries. Will create collection if none exists.
   */
-  const checkCollection = async () => {
-    const collections = await db.listCollections()
-    const colExists = collections.map(c => c.name).includes(name)
-    if (colExists) {
-      return
-    }
+  function checkCollection () {
+    db.listCollections().then(collections => {
+      const colExists = collections.map(c => c.name).includes(name)
 
-    await collection.create()
-    return
+      if (colExists) {
+        return
+      }
+
+      collection.create()
+      return
+    })
   }
 
   checkCollection()
@@ -52,12 +75,11 @@ export default function database (options) {
     class DecoratedClass extends Component {
       constructor (props) {
         super(props)
-        this.props.collection = collection
+        checkCollection()
       }
 
       async find (args, opts = { andCount: false }) {
         const { andCount } = opts
-        await checkCollection()
 
         const { query, bindVars } = await queryBuilder({
           ...args,
@@ -83,20 +105,18 @@ export default function database (options) {
       }
 
       async findOne (args) {
-        await checkCollection()
         args.limit = 1
         const results = await this.find(args)
         return results[0]
       }
 
       async findAndCount (args) {
-        await checkCollection()
         const results = await this.find(args, { andCount: true })
         return results
       }
 
       /*
-        This function looks through the schema to find fields that use the ArangoId type. If they do, they altered from an object to just a string (`object._id`) if they aren't already an `_id` string. It is for convenience, if all docs are saved as `_id` strings, then there would be no need for this.
+        This function looks through the schema to find fields that use the ArangoId type. If they do, they're altered from an object to just a string (`object._id`) if they aren't already an `_id` string. It is for convenience, if all docs are saved as `_id` strings, then there would be no need for this.
       */
       async processDocuments (props) {
         this.schema.type.properties.map((prop) => {
@@ -112,7 +132,7 @@ export default function database (options) {
       }
 
       async save (...args) {
-        await checkCollection()
+        await checkIndexes(this)
         const isCollection = typeof options.collection === 'string'
         let props = isCollection ? args[0] : args[2] || {}
 
@@ -144,7 +164,6 @@ export default function database (options) {
         return isCollection ? data.new : data
       }
 
-      @before(checkCollection)
       async query (query) {
         const cursor = await db.query(query)
         const results = cursor.all()

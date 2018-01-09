@@ -22,6 +22,7 @@ export const UserSchema = t.type(
 })
 class User extends Component {
   schema = UserSchema
+  uniques = ['email']
   path = '/user/:user?'
 
   async respond () {

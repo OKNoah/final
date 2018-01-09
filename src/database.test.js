@@ -3,13 +3,14 @@
 */
 import test from 'tape'
 import t from 'flow-runtime'
+import { randomBytes } from 'crypto'
 
 import { Component, database } from './index'
 import { StringLengthType, CollectionType, EmailType } from './types'
 
 const UserSchema = t.type(
   'User', t.object(
-    t.property('name', StringLengthType(3, 16)),
+    t.property('name', StringLengthType(3, 18)),
     t.property('email', EmailType),
     t.property('body', t.string(), true)
   )
@@ -21,6 +22,7 @@ const UserSchema = t.type(
 class UserComponent extends Component {
   path = '/user/:user?'
   schema = UserSchema
+  uniques = ['email']
 
   async respond () {
     await this.save({ "body": "Updated!" })
@@ -55,6 +57,10 @@ const Post = new PostComponent()
 const User = new UserComponent()
 const Like = new LikeComponent()
 
+const uid = randomBytes(4).toString('hex')
+const name = `test-user-${uid}`
+const email = `test-user-${uid}@rainycode.com`
+
 test('schema validation', async (tt) => {
   try {
     await User.save({
@@ -64,7 +70,7 @@ test('schema validation', async (tt) => {
     })
   } catch (e) {
     const errors = e.message.split(',')
-    tt.equal(errors[0], 'User.name must be between 3 & 16 characters')
+    tt.equal(errors[0], 'User.name must be between 3 & 18 characters')
     tt.equal(errors[1], 'User.email should be an email address')
     tt.equal(errors[2], 'User.body must be a string')
     tt.end()
@@ -73,12 +79,12 @@ test('schema validation', async (tt) => {
 
 test('schema validation - no errors', async (tt) => {
   const user = await User.save({
-    name: 'joe-joe',
-    email: '123@me.com'
+    name: name,
+    email: email
   })
 
-  tt.equal(user.name, 'joe-joe', 'should have correct name')
-  tt.equal(user.email, '123@me.com', 'should have correct email')
+  tt.equal(user.name, name, 'should have correct name')
+  tt.equal(user.email, email, 'should have correct email')
   tt.ok(user._createdAt, 'should have _createdAt field')
   tt.ok(user._id, 'should have _id field')
   tt.ok(user._key, 'should have _key field')
@@ -88,7 +94,7 @@ test('schema validation - no errors', async (tt) => {
 
 test('find function', async (tt) => {
   const users = await User.find({
-    where: { name: 'joe-joe', email: '123@me.com' }
+    where: { name: name, email: email }
   })
 
   tt.ok(users.length >= 1, 'should return array with at least one item')
@@ -98,11 +104,11 @@ test('find function', async (tt) => {
 
 test('findOne function', async (tt) => {
   const user = await User.findOne({
-    where: { name: 'joe-joe', email: '123@me.com' }
+    where: { name: name, email: email }
   })
 
-  tt.equal(user.name, 'joe-joe', 'should have correct name')
-  tt.equal(user.email, '123@me.com', 'should have correct email')
+  tt.equal(user.name, name, 'should have correct name')
+  tt.equal(user.email, email, 'should have correct email')
   tt.ok(user._createdAt, 'should have _createdAt field')
   tt.ok(user._id, 'should have _id field')
   tt.ok(user._key, 'should have _key field')
@@ -113,7 +119,7 @@ test('findOne function', async (tt) => {
 
 test('findAndCount function', async (tt) => {
   const { data, meta } = await User.findAndCount({
-    where: { name: 'joe-joe', email: '123@me.com' }
+    where: { name: name, email: email }
   })
 
   tt.ok(Array.isArray(data), 'should return data data')
@@ -124,7 +130,7 @@ test('findAndCount function', async (tt) => {
 
 test('including docs when saving', async (tt) => {
   const user = await User.findOne({
-    where: { name: 'joe-joe', email: '123@me.com' }
+    where: { email, name }
   })
 
   const newPost = await Post.save({
@@ -152,7 +158,7 @@ test('including docs when finding', async (tt) => {
 })
 
 test('creating edge documents', async (tt) => {
-  const user = await User.findOne({ where: { name: 'joe-joe' } })
+  const user = await User.findOne({ where: { name: name } })
   const post = await Post.findOne({ where: { body: 'I ❤️ Arango' } })
 
   const like = await Like.save(user, post)
@@ -160,4 +166,16 @@ test('creating edge documents', async (tt) => {
   tt.ok(like, 'edge should be created')
   tt.ok(like._id, 'edge have _id proptery')
   tt.end()
+})
+
+test('should enforce uniques', async (tt) => {
+  try {
+    await User.save({
+      name,
+      email
+    })
+  } catch (error) {
+    tt.ok(error, 'should throw error on not unique')
+    tt.end()
+  }
 })
