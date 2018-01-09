@@ -4,8 +4,6 @@
 
 This is a very experimental proof of concept for a server framework. It takes ideas from ES6+ and React to see if there's a more enjoyable, versatile way to create APIs. 
 
-> ⚠️ NOTE: Future releases will be pre-release and have `alpha` and `beta` tags. NPM/yarn will probably not install these unless you specify.
-
 Key concepts are:
 
 #### Classes
