@@ -1,6 +1,6 @@
 {
   "name": "arangolize",
-  "version": "0.9.1",
+  "version": "0.9.3",
   "description": "Sequelize-like query-builder for ArangoDB",
   "main": "dist/index.js",
   "repository": "https://github.com/OKNoah/final/tree/master/packages/arangolize",
@@ -10,9 +10,11 @@
   "scripts": {
     "prepublish": "./node_modules/.bin/babel index.js -d ./dist --ignore node_modules/ --ignore dist/"
   },
-  "dependencies": {
+  "devDependencies": {
     "@babel/cli": "^7.0.0-beta.37",
     "@babel/core": "^7.0.0-beta.37",
-    "@babel/preset-env": "^7.0.0-beta.37"
+    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.37",
+    "@babel/preset-env": "^7.0.0-beta.37",
+    "@babel/preset-stage-0": "^7.0.0-beta.37"
   }
 }

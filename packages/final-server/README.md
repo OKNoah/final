@@ -22,6 +22,15 @@ Decorators are used to add actions and in-memory state to components. The exampl
 
 WebSocket-functionality is built-in (at present). Depending on how you wish to use the library, you can have components that repeat their lifecycle whenever state is changed. This is most useful for WebSocket servers becuase there may be multiple responses per connection. An `http` request will fire `response` onece, but a WebSocket connection might do it many times.
 
+## Installation
+
+Use `yarn` or `npm` to install like so. Arango is optional, and it may also be possible to use without Babel, but documentation assumes you can use decorators and class properties.
+
+```
+yarn add final-server final-arango
+yarn add --dev @babel/core @babel/preset-env @babel/plugin-proposal-class-properties @babel/preset-stage-0
+```
+
 ## Usage
 
 See the [`/examples`](examples) and files matching the patter [`**/*.test.js`](src) for more usage and explanation. Be warned the API will change a lot.

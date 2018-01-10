@@ -1,7 +1,7 @@
 import Final from '../../src/Component'
-import { findDecorator } from '../ArangoDecorator'
+import arango from 'final-arango'
 
-@findDecorator({
+@arango({
   collection: 'Post'
 })
 export default class User extends Final {
