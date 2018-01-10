@@ -3,6 +3,11 @@ import { Component, reduxConnect } from './index'
 import { store } from '../examples/middleware'
 import database from 'final-arango'
 import { bindActionCreators } from 'redux'
+import { randomBytes } from 'crypto'
+
+const uid = randomBytes(4).toString('hex')
+const name = `test-user-${uid}`
+const email = `test-user-${uid}@rainycode.com`
 
 @reduxConnect(
   (state) => ({
@@ -19,7 +24,11 @@ class UserComponent extends Component {
   path = '/user/:user?'
 
   async respond () {
-    await this.save({ "body": "Updated!" })
+    await this.save({
+      email,
+      name,
+      "body": "Updated!"
+    })
     await this.actions.increment()
     return {
       params: this.props.params,
