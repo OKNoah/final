@@ -1,0 +1,25 @@
+0 silly input [ '@babel/cli',
+0 silly input   '@babel/core',
+0 silly input   '@babel/register',
+0 silly input   '@babel/present-env' ]
+1 silly flags { _: [ 'add' ],
+1 silly flags   'reject-cycles': false,
+1 silly flags   rejectCycles: false,
+1 silly flags   scope: 'final-arango',
+1 silly flags   args:
+1 silly flags    [ '@babel/cli',
+1 silly flags      '@babel/core',
+1 silly flags      '@babel/register',
+1 silly flags      '@babel/present-env' ] }
+2 verbose rootPath /Users/noah/Projects/final
+3 info version 2.6.0
+4 info versioning independent
+5 silly isInitialized
+6 silly isInitialized true
+7 silly existsSync /Users/noah/Projects/final/VERSION
+8 info scope final-arango
+9 silly initialize attempt
+10 error initialize callback with error
+11 error Error: Package `@babel/present-env` doesn't exist
+11 error     at got.then.catch.err (/Users/noah/.nvm/versions/v8.9.1/lib/node_modules/lerna/node_modules/package-json/index.js:62:11)
+11 error     at <anonymous>

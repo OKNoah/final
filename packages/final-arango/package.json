@@ -1,0 +1,24 @@
+{
+  "name": "final-arango",
+  "version": "0.9.1",
+  "description": "Arango-enabling decorator for Final server framework",
+  "main": "dist/index.js",
+  "repository": "https://github.com/OKNoah/final/tree/master/packages/final-arango",
+  "author": "Noah Gray <noahgray@me.com> (https://oknoah.github.io)",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "prepublish": "./node_modules/.bin/babel index.js -d ./dist --ignore node_modules/ --ignore dist/"
+  },
+  "dependencies": {
+    "@babel/cli": "^7.0.0-beta.37",
+    "@babel/core": "^7.0.0-beta.37",
+    "@babel/preset-env": "^7.0.0-beta.37",
+    "@babel/register": "^7.0.0-beta.37",
+    "arangojs": "^5.8.0",
+    "arangolize": "^0.9.1",
+    "final-server": "^0.9.5",
+    "flow-runtime": "^0.16.0",
+    "tape": "^4.8.0"
+  }
+}

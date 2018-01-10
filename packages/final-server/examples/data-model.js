@@ -1,4 +1,5 @@
-import { Component, database, types } from '../src/index'
+import { Component, types } from '../src/index'
+import database from 'final-arango'
 import t from 'flow-runtime'
 
 // there is also an important CollectionType for joining documents

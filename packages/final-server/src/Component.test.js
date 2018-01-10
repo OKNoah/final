@@ -1,7 +1,7 @@
 import test from 'tape'
 import { Component, reduxConnect } from './index'
 import { store } from '../examples/middleware'
-import { database } from './index'
+import database from 'final-arango'
 import { bindActionCreators } from 'redux'
 
 @reduxConnect(

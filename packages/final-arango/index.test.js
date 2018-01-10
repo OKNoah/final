@@ -4,9 +4,10 @@
 import test from 'tape'
 import t from 'flow-runtime'
 import { randomBytes } from 'crypto'
+import { Component, types } from 'final-server'
+import database from './index'
 
-import { Component, database } from './index'
-import { StringLengthType, CollectionType, EmailType } from './types'
+const { StringLengthType, CollectionType, EmailType } = types
 
 const UserSchema = t.type(
   'User', t.object(
