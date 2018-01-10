@@ -1,7 +1,7 @@
 {
   "name": "final-server",
   "description": "A component-based server framework for ES6+, with a React-like lifecycle. Experimental.",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "main": "dist/index.js",
   "author": "Noah Gray <noahgray@me.com> (https://github.com/oknoah)",
   "license": "MIT",
@@ -56,7 +56,7 @@
     "@babel/core": "^7.0.0-beta.37",
     "@babel/preset-env": "^7.0.0-beta.37",
     "arangojs": "6.0.0-alpha.4",
-    "arangolize": "^0.9.0",
+    "arangolize": "^0.9.1",
     "busboy": "^0.2.14",
     "co-body": "^5.1.1",
     "core-decorators": "^0.20.0",
