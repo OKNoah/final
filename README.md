@@ -3,14 +3,19 @@
 Master repo for Final-related packages.
 
 * [final-server](packages/final-server) - Package for creating and running apps with the Final framekwork
+* [final-arango](packages/final-server) - Decorator for adding database functionality to Final
 * [arangolize](packages/arangolize) - The query-builder used in final-arango
-
-More to come!
 
 ## Quick intro
 
+[Examples here](packages/final-server/examples)
+
+[Tests here](packages/final-arango/index.test.js)
+
+Simple example:
+
 ```js
-import Final, { createServer } from '../src/index'
+import Final, { createServer } from 'final-server'
 import database from 'final-arango'
 import { UserSchema } from './data-model'
 
