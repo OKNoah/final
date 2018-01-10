@@ -4,15 +4,14 @@ import reduxConnect from './reduxConnect'
 import hoist from './hoist'
 import updater from './updater'
 import logger from './logger'
-import database from './database'
-import types from './types'
+import * as types from './types'
 
 const Final = {
-  Component, createServer, hoist, reduxConnect, updater, logger, database, types
+  Component, createServer, hoist, reduxConnect, updater, logger, types
 }
 
 export {
-  Component, createServer, hoist, reduxConnect, updater, logger, database, types
+  Component, createServer, hoist, reduxConnect, updater, logger, types
 }
 
 export default Final

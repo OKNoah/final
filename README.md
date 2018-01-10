@@ -10,7 +10,8 @@ More to come!
 ## Quick intro
 
 ```js
-import Final, { database, createServer } from '../src/index'
+import Final, { createServer } from '../src/index'
+import database from 'final-arango'
 import { UserSchema } from './data-model'
 
 @database({

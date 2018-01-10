@@ -1,10 +1,11 @@
-import Final, { database, createServer } from '../src/index'
+import { Component, createServer } from '../src/index'
+import database from 'final-arango'
 import { UserSchema } from './data-model'
 
 @database({
   collection: 'FinalUser'
 })
-class User extends Final.Component {
+class User extends Component {
   path = '/user/:user?'
   schema = UserSchema
   uniques = ['email']

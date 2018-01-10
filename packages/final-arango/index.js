@@ -1,5 +1,5 @@
 import { Database } from 'arangojs'
-import { Component, hoist } from './index'
+import { Component, hoist } from 'final-server'
 import t from 'flow-runtime'
 import arangolize from 'arangolize'
 
