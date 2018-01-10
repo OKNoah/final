@@ -89,7 +89,7 @@ export default class Final {
     let response = {}
 
     if (this.props.response instanceof ServerResponse) {
-      switch (this.props.request.method.toUpperCase()) {
+      switch (this.props.method.toUpperCase()) {
         case 'GET':
           response = await this.get()
           break
@@ -103,7 +103,7 @@ export default class Final {
           response = await this.delete()
           break
         default:
-          response = this.props.request.method.toUpperCase()
+          response = this.props.method.toUpperCase()
       }
     } else {
       response = await this.socket()
