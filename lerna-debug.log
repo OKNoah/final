@@ -1,0 +1,4 @@
+178 error execute Error occured with 'arangolize' while running 'npm run prepublish'
+179 error npm run prepublish [arangolize] Output from stdout:
+180 error npm run prepublish [arangolize] Output from stderr:
+181 error execute Error occured with 'arangolize' while running 'npm run prepublish'

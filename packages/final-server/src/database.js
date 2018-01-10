@@ -1,7 +1,7 @@
 import { Database } from 'arangojs'
 import { Component, hoist } from './index'
 import t from 'flow-runtime'
-import queryBuilder from './queryBuilder'
+import arangolize from 'arangolize'
 
 const OptionsSchema = t.type('ArangoOptions', t.object(
   t.property('edge', t.string(), true),
@@ -81,7 +81,7 @@ export default function database (options) {
       async find (args, opts = { andCount: false }) {
         const { andCount } = opts
 
-        const { query, bindVars } = await queryBuilder({
+        const { query, bindVars } = await arangolize({
           ...args,
           collection: options.collection
         })
