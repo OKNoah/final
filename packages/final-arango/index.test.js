@@ -5,7 +5,7 @@ import test from 'tape'
 import t from 'flow-runtime'
 import { randomBytes } from 'crypto'
 import { Component, types } from 'final-server'
-import database from './index'
+import { database } from './config'
 
 const { StringLengthType, CollectionType, EmailType } = types
 
@@ -62,7 +62,13 @@ const uid = randomBytes(4).toString('hex')
 const name = `test-user-${uid}`
 const email = `test-user-${uid}@rainycode.com`
 
+/*
+  The delay is used at the start of the test to allow time for the database and collections to be initialized. Decorators cannot be async, so I coudn't find a better way to do this.
+*/
+const delay = () => new Promise((r) => setTimeout(() => r(true), 2000))
+
 test('schema validation', async (tt) => {
+  await delay()
   try {
     await User.save({
       name: 'jo',
@@ -135,7 +141,7 @@ test('including docs when saving', async (tt) => {
   })
 
   const newPost = await Post.save({
-    body: 'I ❤️ Arango',
+    body: `I ❤️ Arango ${uid}`,
     user
   })
 
@@ -146,7 +152,7 @@ test('including docs when saving', async (tt) => {
 
 test('including docs when finding', async (tt) => {
   const post = await Post.findOne({
-    where: { body: 'I ❤️ Arango' },
+    where: { body: `I ❤️ Arango ${uid}` },
     include: [{
       as: 'user'
     }]
@@ -160,7 +166,7 @@ test('including docs when finding', async (tt) => {
 
 test('creating edge documents', async (tt) => {
   const user = await User.findOne({ where: { name: name } })
-  const post = await Post.findOne({ where: { body: 'I ❤️ Arango' } })
+  const post = await Post.findOne({ where: { body: `I ❤️ Arango ${uid}` } })
 
   const like = await Like.save(user, post)
 
