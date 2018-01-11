@@ -4,8 +4,9 @@
 import test from 'tape'
 import t from 'flow-runtime'
 import { randomBytes } from 'crypto'
-import { Component, types } from 'final-server'
+import { Component } from 'final-server'
 import { database } from './config'
+import { types } from './index'
 
 const { StringLengthType, CollectionType, EmailType } = types
 

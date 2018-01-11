@@ -18,6 +18,8 @@ const email = `test-user-${uid}@rainycode.com`
   }, dispatch)
 )
 @database({
+  database: 'test'
+})({
   collection: 'FinalUser'
 })
 class UserComponent extends Component {
@@ -37,7 +39,10 @@ class UserComponent extends Component {
   }
 }
 
-test('create User', (t) => {
+const delay = () => new Promise((r) => setTimeout(() => r(true), 2000))
+
+test('create User', async (t) => {
+  await delay()
   const User = new UserComponent(store)
 
   t.ok(typeof User.save === 'function', 'should have save function')

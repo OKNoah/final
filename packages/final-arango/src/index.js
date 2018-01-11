@@ -2,6 +2,9 @@ import { Database } from 'arangojs'
 import { Component, hoist } from 'final-server'
 import t from 'flow-runtime'
 import arangolize from 'arangolize'
+import * as types from './types'
+
+export { types }
 
 const OptionsSchema = t.type('ArangoOptions', t.object(
   t.property('edge', t.string(), true),
@@ -17,7 +20,7 @@ function validationErrorHandler (e) {
 /*
   For now it just uses the database named 'test'. We could put a place to change this in the decorator, but it will lead to redundant code. Instead, we will create a way to initialize the datebase in `createServer`, or in the `redux` equivelant.
 */
-function arango (dbOptions) {
+export default function arango (dbOptions) {
   const database = dbOptions.database || 'test'
   const url = dbOptions.url || 'http://root:@127.0.0.1:8529'
   const arangoVersion = dbOptions.arangoVersion || 30300
@@ -233,11 +236,7 @@ function arango (dbOptions) {
         }
       }
 
-
-
-      target = hoist(target, DecoratedClass)
+      return hoist(target, DecoratedClass)
     }
   }
 }
-
-export default arango
