@@ -164,6 +164,16 @@ export default function database (options) {
         return isCollection ? data.new : data
       }
 
+      async remove (doc) {
+        if (typeof doc === 'object' && doc._id) {
+          await collection.remove(doc._id)
+          return
+        }
+
+        await collection.remove(doc)
+        return
+      }
+
       async query (query) {
         const cursor = await db.query(query)
         const results = cursor.all()

@@ -169,7 +169,7 @@ test('creating edge documents', async (tt) => {
   tt.end()
 })
 
-test('should enforce uniques', async (tt) => {
+test('enforce uniques', async (tt) => {
   try {
     await User.save({
       name,
@@ -180,3 +180,13 @@ test('should enforce uniques', async (tt) => {
     tt.end()
   }
 })
+
+test('delete documents', async (tt) => {
+  const user = await User.findOne({ where: { email } })
+  await User.remove(user)
+  const user2 = await User.findOne({ where: { email } })
+
+  tt.ok(!user2, 'should not return user after deletion')
+  tt.end()
+})
+
