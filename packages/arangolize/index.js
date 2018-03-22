@@ -73,12 +73,24 @@ class Query {
 
       query(`\n })), \n`)
     } else {
-      query(` return MERGE(instance, { @includeAs: DOCUMENT(instance[@includeAs]) }) \n), \n`)
+      query(`let doc = MERGE(instance, { @includeAs: DOCUMENT(instance[@includeAs]) })`)
+
+      if (include.where) {
+        Object.keys(include.where).map((key, index) => {
+          const variable = `${key}${index}`
+          const value = `${variable}value`
+          bindVars({[variable]: key})
+          bindVars({[value]: include.where[key]})
+          query(`\n filter doc.@includeAs.@${variable} == @${value}`)
+        })
+      }
+
+      query(`\n return doc)\n`)
     }
   }
 
   async build () {
-    let { where, attributes, sort, include } = this.props
+    let { where, attributes, sort, include} = this.props
     const { query, bindVars } = this
 
     if (include && !Array.isArray(include)) {
@@ -105,28 +117,22 @@ class Query {
       }
     }
 
-    query` return instance ) \n` // ends data = (...)
-    query` return {
-      data: (
-        for instance in data
-          limit @skip, @limit
-    `
-
-    if (attributes && !include) {
-      bindVars({ attributes: attributes })
-      query` return KEEP(instance, @attributes) \n ), \n`
-    } else if (attributes && include) {
+    if (attributes && include) {
       query`let atts = KEEP(instance, @attributes)`
       this.handleInclude()
     } else if (include) {
       this.handleInclude()
-    } else {
-      query` return instance ), \n`
     }
 
-    query` meta: { count: LENGTH(data) }`
-
-    query` \n }`
+    query` return {
+      data: (
+        for instance in data
+          limit @skip, @limit
+            return instance
+        ),
+      meta: { count: LENGTH(data) }
+    }
+    `
 
     return { query: this._query, bindVars: this._bindVars }
   }

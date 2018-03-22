@@ -14,3 +14,18 @@ test('should return query and bindVars', async (t) => {
   t.ok(query, 'should have query')
   t.end()
 })
+
+/**/
+test('should return query and bindVars', async (t) => {
+  const { bindVars, query } = await arangolize({
+    collection: 'test',
+    include: {
+      as: 'user',
+      where: { name: 'Noah', createdAt: "2017-09-05T12:05:30.166Z" }
+    }
+  })
+
+  t.ok(bindVars, 'should have bindVars')
+  t.ok(query, 'should have query')
+  t.end()
+})
