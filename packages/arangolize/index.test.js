@@ -25,7 +25,17 @@ test('should return query and bindVars', async (t) => {
     }
   })
 
-  console.log('test2', query)
+  t.ok(bindVars, 'should have bindVars')
+  t.ok(query, 'should have query')
+  t.end()
+})
+
+/**/
+test('include attributes', async (t) => {
+  const { bindVars, query } = await arangolize({
+    collection: 'test',
+    attributes: ['_createdAt']
+  })
 
   t.ok(bindVars, 'should have bindVars')
   t.ok(query, 'should have query')

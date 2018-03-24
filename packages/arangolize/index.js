@@ -105,10 +105,6 @@ class Query {
       query(this.getWhere(where))
     }
 
-    if (where && !include) {
-      query(`\nreturn instance\n)\n`)
-    }
-
     if (sort) {
       const sortArray = sort.split(' ')
       const direction = sortArray[1].toLowerCase()
@@ -126,6 +122,10 @@ class Query {
       this.handleInclude()
     } else if (include) {
       this.handleInclude()
+    }
+
+    if (!include) {
+      query(`\nreturn ${attributes && !include ? 'KEEP(instance, @attributes)' : 'instance'}\n)`)
     }
 
     query` return {
