@@ -105,6 +105,10 @@ class Query {
       query(this.getWhere(where))
     }
 
+    if (where && !include) {
+      query(`\nreturn instance\n)\n`)
+    }
+
     if (sort) {
       const sortArray = sort.split(' ')
       const direction = sortArray[1].toLowerCase()

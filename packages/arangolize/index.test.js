@@ -25,6 +25,8 @@ test('should return query and bindVars', async (t) => {
     }
   })
 
+  console.log('test2', query)
+
   t.ok(bindVars, 'should have bindVars')
   t.ok(query, 'should have query')
   t.end()
