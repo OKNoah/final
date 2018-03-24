@@ -1,6 +1,6 @@
 {
   "name": "final-arango",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "description": "Arango-enabling decorator for Final server framework",
   "main": "dist/index.js",
   "repository": "https://github.com/OKNoah/final/tree/master/packages/final-arango",
@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "arangojs": "^5.8.0",
-    "arangolize": "^0.9.5",
-    "final-server": "^0.9.11",
+    "arangolize": "^0.9.6",
+    "final-server": "^0.9.12",
     "flow-runtime": "^0.16.0",
     "tape": "^4.8.0"
   },
