@@ -10,8 +10,7 @@ class Query {
     }
     this._query = `let data = (
       for instance in @@modelName
-      filter instance._removed != true
-    `
+      filter instance._removed != true`
   }
 
   getWhere (where) {
@@ -35,7 +34,11 @@ class Query {
   @autobind
   query (string) {
     try {
-      this._query += string
+      if (string.indexOf('\n') === 0) {
+        return this._query += string
+      }
+
+      this._query += '\n' + string
     } catch (e) {
       console.error(e)
     }
@@ -56,11 +59,11 @@ class Query {
     The `include` syntax is used like in Sequelize. It replaces an ArangoDB ID string with the actual document. It's like a `JOIN`. This accepts an object or array of objects.
   */
   handleInclude () {
-    const { include } = this.props
+    const { include, attributes } = this.props
     const { query, bindVars } = this
 
     if (Array.isArray(include)) {
-      query('return MERGE(instance, {\n')
+      query('return MERGE(instance, {')
 
       include.map((inc, index) => {
         const includeAs = `includeAs${index}`
@@ -71,9 +74,9 @@ class Query {
         }
       })
 
-      query(`\n })), \n`)
+      query(`\n })),`)
     } else {
-      query(`\nlet doc = MERGE(instance, { @includeAs: DOCUMENT(instance[@includeAs]) })`)
+      query(`let doc = MERGE(${attributes ? 'atts' : 'instance'}, { @includeAs: DOCUMENT(instance[@includeAs]) })`)
       bindVars({'includeAs': include.as})
 
       if (include.where) {
@@ -86,7 +89,12 @@ class Query {
         })
       }
 
-      query(`\n return doc)\n`)
+      if (include.attributes) {
+        bindVars({includeAttributes: include.attributes})
+        query(`return MERGE(doc, { @includeAs: KEEP(doc.@includeAs, @includeAttributes )})\n)`)
+      } else {
+        query(`return doc)`)
+      }
     }
   }
 
@@ -110,7 +118,7 @@ class Query {
       const sortArray = sort.split(' ')
       const direction = sortArray[1].toLowerCase()
       if (['asc', 'desc'].includes(direction)) {
-        query`\n sort instance.@sortparam @sortDirection`
+        query(`sort instance.@sortparam @sortDirection`)
         bindVars({ sortparam: sortArray[0] })
         bindVars({ sortDirection: direction })
       } else {
@@ -119,14 +127,14 @@ class Query {
     }
 
     if (attributes && include) {
-      query`let atts = KEEP(instance, @attributes)`
+      query(`let atts = KEEP(instance, @attributes)`)
       this.handleInclude()
     } else if (include) {
       this.handleInclude()
     }
 
     if (!include) {
-      query(`\nreturn ${attributes && !include ? 'KEEP(instance, @attributes)' : 'instance'}\n)`)
+      query(`\nreturn ${attributes && !include ? 'KEEP(instance, @attributes)' : 'instance'})`)
     }
 
     query` return {

@@ -45,12 +45,15 @@ test('include attributes', async (t) => {
 /**/
 test('complex query', async (t) => {
   const { bindVars, query } = await arangolize({
+    collection: 'test',
     limit: 5,
     skip: 0,
     sort: 'createdAt DESC',
+    attributes: ['creator', 'createdAt'],
     include: {
       as: 'creator',
-      where: {name: 'noah'}
+      where: {name: 'noah'},
+      attributes: ['createdAt', 'name']
     }
   })
 
