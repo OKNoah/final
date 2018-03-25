@@ -1,7 +1,7 @@
 {
   "name": "final-server",
   "description": "A component-based server framework for ES6+, with a React-like lifecycle. Experimental.",
-  "version": "0.9.12",
+  "version": "0.9.13",
   "main": "dist/index.js",
   "author": "Noah Gray <noahgray@me.com> (https://github.com/oknoah)",
   "license": "MIT",
@@ -51,10 +51,10 @@
   },
   "dependencies": {
     "arangojs": "6.0.0-alpha.4",
-    "arangolize": "^0.9.6",
+    "arangolize": "^0.9.7",
     "co-body": "^5.1.1",
     "core-decorators": "^0.20.0",
-    "final-arango": "^0.9.8",
+    "final-arango": "^0.9.9",
     "flow-runtime": "^0.16.0",
     "lodash": "^4.17.4",
     "path-match": "^1.2.4",
