@@ -10,8 +10,7 @@ class Query {
     }
     this._query = `let data = (
       for instance in @@modelName
-      filter instance._removed != true
-    `
+      filter instance._removed != true`
   }
 
   getWhere (where) {
@@ -35,7 +34,11 @@ class Query {
   @autobind
   query (string) {
     try {
-      this._query += string
+      if (string.indexOf('\n') === 0) {
+        return this._query += string
+      }
+
+      this._query += '\n' + string
     } catch (e) {
       console.error(e)
     }
@@ -56,11 +59,11 @@ class Query {
     The `include` syntax is used like in Sequelize. It replaces an ArangoDB ID string with the actual document. It's like a `JOIN`. This accepts an object or array of objects.
   */
   handleInclude () {
-    const { include } = this.props
+    const { include, attributes } = this.props
     const { query, bindVars } = this
 
     if (Array.isArray(include)) {
-      query('return MERGE(instance, {\n')
+      query('return MERGE(instance, {')
 
       include.map((inc, index) => {
         const includeAs = `includeAs${index}`
@@ -71,14 +74,32 @@ class Query {
         }
       })
 
-      query(`\n })), \n`)
+      query(`\n })),`)
     } else {
-      query(` return MERGE(instance, { @includeAs: DOCUMENT(instance[@includeAs]) }) \n), \n`)
+      query(`let doc = MERGE(${attributes ? 'atts' : 'instance'}, { @includeAs: DOCUMENT(instance[@includeAs]) })`)
+      bindVars({'includeAs': include.as})
+
+      if (include.where) {
+        Object.keys(include.where).map((key, index) => {
+          const variable = `${key}${index}`
+          const value = `${variable}value`
+          bindVars({[variable]: key})
+          bindVars({[value]: include.where[key]})
+          query(`\n filter doc.@includeAs.@${variable} == @${value}`)
+        })
+      }
+
+      if (include.attributes) {
+        bindVars({includeAttributes: include.attributes})
+        query(`return MERGE(doc, { @includeAs: KEEP(doc.@includeAs, @includeAttributes )})\n)`)
+      } else {
+        query(`return doc)`)
+      }
     }
   }
 
   async build () {
-    let { where, attributes, sort, include } = this.props
+    let { where, attributes, sort, include} = this.props
     const { query, bindVars } = this
 
     if (include && !Array.isArray(include)) {
@@ -97,7 +118,7 @@ class Query {
       const sortArray = sort.split(' ')
       const direction = sortArray[1].toLowerCase()
       if (['asc', 'desc'].includes(direction)) {
-        query`\n sort instance.@sortparam @sortDirection`
+        query(`sort instance.@sortparam @sortDirection`)
         bindVars({ sortparam: sortArray[0] })
         bindVars({ sortDirection: direction })
       } else {
@@ -105,28 +126,26 @@ class Query {
       }
     }
 
-    query` return instance ) \n` // ends data = (...)
+    if (attributes && include) {
+      query(`let atts = KEEP(instance, @attributes)`)
+      this.handleInclude()
+    } else if (include) {
+      this.handleInclude()
+    }
+
+    if (!include) {
+      query(`\nreturn ${attributes && !include ? 'KEEP(instance, @attributes)' : 'instance'})`)
+    }
+
     query` return {
       data: (
         for instance in data
           limit @skip, @limit
-    `
-
-    if (attributes && !include) {
-      bindVars({ attributes: attributes })
-      query` return KEEP(instance, @attributes) \n ), \n`
-    } else if (attributes && include) {
-      query`let atts = KEEP(instance, @attributes)`
-      this.handleInclude()
-    } else if (include) {
-      this.handleInclude()
-    } else {
-      query` return instance ), \n`
+            return instance
+        ),
+      meta: { count: LENGTH(data) }
     }
-
-    query` meta: { count: LENGTH(data) }`
-
-    query` \n }`
+    `
 
     return { query: this._query, bindVars: this._bindVars }
   }
