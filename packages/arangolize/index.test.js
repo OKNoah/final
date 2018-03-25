@@ -41,3 +41,20 @@ test('include attributes', async (t) => {
   t.ok(query, 'should have query')
   t.end()
 })
+
+/**/
+test('complex query', async (t) => {
+  const { bindVars, query } = await arangolize({
+    limit: 5,
+    skip: 0,
+    sort: 'createdAt DESC',
+    include: {
+      as: 'creator',
+      where: {name: 'noah'}
+    }
+  })
+
+  t.ok(bindVars, 'should have bindVars')
+  t.ok(query, 'should have query')
+  t.end()
+})

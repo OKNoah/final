@@ -73,7 +73,7 @@ class Query {
 
       query(`\n })), \n`)
     } else {
-      query(`let doc = MERGE(instance, { @includeAs: DOCUMENT(instance[@includeAs]) })`)
+      query(`\nlet doc = MERGE(instance, { @includeAs: DOCUMENT(instance[@includeAs]) })`)
       bindVars({'includeAs': include.as})
 
       if (include.where) {
